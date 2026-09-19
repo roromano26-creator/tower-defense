@@ -1,0 +1,92 @@
+name: Bastion – WebGL navigateur
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: td-webgl-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-webgl:
+    name: Construire le WebGL
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Vérifier que la licence Unity est configurée
+        run: |
+          if [ -z "${{ secrets.UNITY_LICENSE }}" ]; then
+            echo "::error::Le secret UNITY_LICENSE est absent. Voir CI_CD_SETUP.md, étape 1."
+            exit 1
+          fi
+
+      - name: Cache de la bibliothèque Unity
+        uses: actions/cache@v4
+        with:
+          path: Library
+          key: td-library-webgl-${{ hashFiles('Packages/manifest.json') }}-${{ github.sha }}
+          restore-keys: |
+            td-library-webgl-${{ hashFiles('Packages/manifest.json') }}-
+            td-library-webgl-
+
+      - name: Construire avec Unity
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: .
+          targetPlatform: WebGL
+          buildMethod: Bastion.EditorTools.WebGLBuildSettings.CIBuildWebGL
+          versioning: None
+          allowDirtyBuild: true
+
+      # GameCI construit dans un conteneur : les fichiers appartiennent à root et
+      # les étapes suivantes ne pourraient ni les lire ni les téléverser.
+      - name: Rendre la sortie lisible
+        if: success()
+        run: sudo chown -R "$USER" Builds
+
+      - name: Publier le WebGL
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bastion-webgl
+          path: Builds/WebGL
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Déployer sur Vercel
+        if: success() && github.ref == 'refs/heads/main'
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
+            echo "Secrets Vercel absents : déploiement ignoré, l'artefact bastion-webgl reste téléchargeable."
+            exit 0
+          fi
+          url=$(npx --yes vercel@latest deploy Builds/WebGL \
+                  --prod --yes --token "$VERCEL_TOKEN")
+          echo "Jouable ici : $url"
+          echo "### Tower Defense jouable : $url" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publier le journal en cas d'échec
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: journal-unity-webgl
+          path: |
+            *.log
+            Logs/**
+          if-no-files-found: ignore
+          retention-days: 7

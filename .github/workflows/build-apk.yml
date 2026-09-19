@@ -1,0 +1,75 @@
+name: Bastion – APK Android
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: td-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-apk:
+    name: Construire l'APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      # Sans licence, GameCI échoue au bout de plusieurs minutes sur un message obscur.
+      # Autant le dire tout de suite, en nommant le secret manquant.
+      - name: Vérifier que la licence Unity est configurée
+        run: |
+          if [ -z "${{ secrets.UNITY_LICENSE }}" ]; then
+            echo "::error::Le secret UNITY_LICENSE est absent. Voir CI_CD_SETUP.md, étape 1."
+            exit 1
+          fi
+
+      # La bibliothèque Unity (import des assets) représente l'essentiel du temps de la
+      # première exécution ; la garder en cache ramène les suivantes à quelques minutes.
+      - name: Cache de la bibliothèque Unity
+        uses: actions/cache@v4
+        with:
+          path: Library
+          key: td-library-android-${{ hashFiles('Packages/manifest.json') }}-${{ github.sha }}
+          restore-keys: |
+            td-library-android-${{ hashFiles('Packages/manifest.json') }}-
+            td-library-android-
+
+      - name: Construire avec Unity
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: .
+          targetPlatform: Android
+          buildMethod: Bastion.EditorTools.AndroidBuildSettings.CIBuildApk
+          versioning: None
+          allowDirtyBuild: true
+
+      - name: Publier l'APK
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bastion-apk
+          path: Builds/Bastion.apk
+          if-no-files-found: error
+          retention-days: 30
+
+      # Le journal Unity est la seule trace exploitable quand la construction échoue.
+      - name: Publier le journal en cas d'échec
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: journal-unity-android
+          path: |
+            *.log
+            Logs/**
+          if-no-files-found: ignore
+          retention-days: 7

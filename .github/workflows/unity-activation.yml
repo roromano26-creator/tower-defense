@@ -1,0 +1,30 @@
+name: Unity – Demander le fichier d'activation (à lancer une seule fois)
+
+# Étape préalable unique pour obtenir le secret UNITY_LICENSE.
+# Volontairement manuel : ce workflow ne construit rien, il produit seulement le
+# fichier .alf à déposer sur license.unity3d.com/manual pour recevoir le .ulf.
+on:
+  workflow_dispatch:
+
+jobs:
+  activation:
+    name: Produire le fichier .alf
+    runs-on: ubuntu-latest
+    steps:
+      - uses: game-ci/unity-request-activation-file@v2
+        id: demande
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: licence-unity-alf
+          path: ${{ steps.demande.outputs.filePath }}
+          retention-days: 1
+
+      - run: |
+          {
+            echo "### Fichier d'activation prêt"
+            echo ""
+            echo "1. Téléchargez l'artefact **licence-unity-alf** ci-dessous et décompressez-le."
+            echo "2. Déposez le fichier \`.alf\` sur https://license.unity3d.com/manual"
+            echo "3. Vous recevez un fichier \`.ulf\` : copiez **tout son contenu** dans le secret \`UNITY_LICENSE\`."
+          } >> "$GITHUB_STEP_SUMMARY"
