@@ -55,6 +55,7 @@ jobs:
           buildMethod: Bastion.EditorTools.AndroidBuildSettings.CIBuildApk
           versioning: None
           allowDirtyBuild: true
+          manualExit: true
 
       - name: Publier l'APK
         if: success()

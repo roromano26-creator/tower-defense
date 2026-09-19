@@ -24,8 +24,9 @@ fichier texte que GitHub pourra utiliser.
 1. Créez un compte sur https://id.unity.com si vous n'en avez pas.
 2. Sur GitHub : onglet **Actions** → workflow **Unity – Demander le fichier
    d'activation** → **Run workflow**.
-3. Une fois terminé (30 secondes), ouvrez l'exécution et téléchargez l'artefact
-   **licence-unity-alf**. Décompressez-le : vous obtenez un fichier `.alf`.
+3. Comptez quelques minutes, le temps de télécharger l'image Unity. Ouvrez
+   ensuite l'exécution et téléchargez l'artefact **licence-unity-alf**.
+   Décompressez-le : vous obtenez un fichier `.alf`.
 4. Allez sur https://license.unity3d.com/manual, connectez-vous, déposez le `.alf`,
    choisissez **Unity Personal** puis *Personal Edition*.
 5. Unity vous renvoie un fichier `.ulf`. Ouvrez-le dans un éditeur de texte et
@@ -110,10 +111,14 @@ serveur statique local.
 - **Une licence Personal ne vaut que pour un poste à la fois.** Si Unity tourne
   sur votre machine avec le même compte, l'activation peut échouer dans le nuage.
 - **La version d'Unity doit exister chez GameCI.** Les workflows lisent
-  `ProjectSettings/ProjectVersion.txt` (actuellement `6000.3.0f1`). Si la
-  construction s'arrête sur une image Docker introuvable, vérifiez les versions
-  disponibles sur https://game-ci.github.io/docs/docker/versions et alignez le
-  fichier sur la plus proche.
+  `ProjectSettings/ProjectVersion.txt`, actuellement `6000.3.0f1`. Les images
+  `android`, `webgl` et `base` de cette version ont été vérifiées comme
+  publiées. Si vous changez de version d'Unity, vérifiez d'abord que les images
+  correspondantes existent, sinon la construction s'arrête sur une image
+  introuvable.
+- **N'utilisez pas `game-ci/unity-request-activation-file`.** Cette action a été
+  retirée et échoue en six secondes sur « This action is no longer supported ».
+  Le workflow d'activation appelle directement l'image Unity à la place.
 - **Un push n'est pas une livraison.** Le workflow peut être rouge pendant que
   tout le reste est vert. Regardez l'onglet Actions avant d'annoncer une version.
 - **En cas d'échec, l'artefact `journal-unity-*` contient le log Unity complet** :

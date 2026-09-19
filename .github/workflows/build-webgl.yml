@@ -51,6 +51,7 @@ jobs:
           buildMethod: Bastion.EditorTools.WebGLBuildSettings.CIBuildWebGL
           versioning: None
           allowDirtyBuild: true
+          manualExit: true
 
       # GameCI construit dans un conteneur : les fichiers appartiennent à root et
       # les étapes suivantes ne pourraient ni les lire ni les téléverser.
