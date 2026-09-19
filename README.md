@@ -4,10 +4,26 @@ Jeu de défense de tours stylisé (cartoon PBR) pour Android, avec placeholders 
 soignés en attendant vos vrais assets 3D. Le projet est **généré par un script Éditeur** :
 le dépôt contient la recette, pas les fichiers YAML fragiles.
 
-## Démarrage
+## Démarrage — sans rien installer
+
+**Unity n'est pas nécessaire pour jouer ni pour construire le jeu.** Trois workflows
+GitHub Actions s'en chargent dans le nuage, à chaque push sur `main` :
+
+- l'**APK Android**, à récupérer dans l'onglet *Actions* et à installer sur le téléphone ;
+- la **version navigateur**, déployée sur Vercel et jouable sur PC comme sur mobile.
+
+Une seule mise en place est requise, elle-même sans installation : la licence Unity
+s'obtient via le workflow *Unity – Demander le fichier d'activation*, qui produit le
+fichier à déposer sur une page web. Marche à suivre et pièges : **[CI_CD_SETUP.md](CI_CD_SETUP.md)**.
+
+## Développer dans l'éditeur Unity (facultatif)
+
+Utile seulement pour itérer vite : dans l'éditeur, un changement se teste en appuyant sur
+Play, là où le nuage demande une construction complète à chaque essai.
+
 
 1. Installez **Unity 6 LTS** (6000.3.x) via Unity Hub, avec le module **Android Build Support**
-   (+ OpenJDK, SDK & NDK).
+   (+ OpenJDK, SDK & NDK). Comptez plusieurs Go.
 2. Ouvrez ce dépôt comme projet Unity. Unity installe les packages du `manifest.json`
    (URP, uGUI/TextMeshPro).
 3. Menu **Bastion → 1. Générer le projet**. Cela crée :
@@ -61,11 +77,6 @@ Voir `ARCHITECTURE.md` (systèmes, flux, choix de perf) et `ASSETS_IMPORT.md` (r
   ProjectSettings/ProjectVersion.txt
 ```
 
-## Construire sans installer Unity
-
-Trois workflows GitHub Actions construisent l'APK et la version navigateur dans le
-nuage, à chaque push sur `main`. Rien à installer : le jeu se
-récupère depuis l'onglet *Actions*. Mise en place et pièges : **[CI_CD_SETUP.md](CI_CD_SETUP.md)**.
 
 ## Tester sur un téléphone
 

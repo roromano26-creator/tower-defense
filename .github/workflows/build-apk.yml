@@ -3,6 +3,9 @@ name: Bastion – APK Android
 on:
   push:
     branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
   workflow_dispatch:
 
 concurrency:
