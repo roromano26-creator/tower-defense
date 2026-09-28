@@ -127,6 +127,14 @@ serveur statique local.
   publiées. Si vous changez de version d'Unity, vérifiez d'abord que les images
   correspondantes existent, sinon la construction s'arrête sur une image
   introuvable.
+- **Une méthode de construction maison doit émettre « Build succeeded! ».** Le
+  `validateBuild` de GameCI ne regarde pas le disque : il cherche cette chaîne
+  exacte dans la sortie, ou une section `# Build results #` sans erreurs. Unity
+  écrit « Build succeeded » sans point d'exclamation, ce qui ne correspond pas.
+  Sans ce marqueur, une construction parfaitement réussie est rapportée en échec,
+  et l'APK produit n'est jamais archivé.
+- **Le conteneur tourne en root.** Les fichiers produits lui appartiennent ; sans
+  un `chown` avant l'archivage, l'étape peut ne pas réussir à les lire.
 - **`androidTargetSdkVersion` est obligatoire ici.** Sans lui, GameCI lit le
   niveau d'API dans `ProjectSettings/ProjectSettings.asset`, que ce dépôt ne
   versionne pas puisqu'il ne contient que la recette. Le `grep` échoue,
