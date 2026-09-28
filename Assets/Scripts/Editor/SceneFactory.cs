@@ -144,7 +144,11 @@ namespace Bastion.EditorTools
             var go = new GameObject("DamagePopup");
             var tmp = go.AddComponent<TMPro.TextMeshPro>();
             tmp.text = "12"; tmp.fontSize = 5f; tmp.alignment = TMPro.TextAlignmentOptions.Center; tmp.fontStyle = TMPro.FontStyles.Bold;
-            tmp.outlineWidth = 0.2f; tmp.outlineColor = new Color32(0, 0, 0, 200);
+            // Pas de outlineWidth ici : ce setter écrit dans le matériau du composant, qui
+            // n'existe pas encore sur un GameObject créé par script et jamais réveillé.
+            // Il levait une NullReferenceException qui faisait échouer toute la génération.
+            // Le contour est décoratif sur un nombre déjà en gras, et se réajoute à la
+            // main sur le prefab si on le souhaite.
             ((RectTransform)go.transform).sizeDelta = new Vector2(3, 1);
             var p = go.AddComponent<DamagePopup>();
             PlaceholderFactory.SetField(p, "text", tmp);
