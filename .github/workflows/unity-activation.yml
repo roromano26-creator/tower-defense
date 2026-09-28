@@ -50,7 +50,9 @@ jobs:
           name: licence-unity-alf
           path: "*.alf"
           if-no-files-found: error
-          retention-days: 1
+          # Sept jours, pas un : une rétention d'un jour a déjà fait expirer le
+          # fichier avant qu'il soit récupéré, obligeant à relancer le workflow.
+          retention-days: 7
 
       - run: |
           {
