@@ -1,11 +1,10 @@
 # Construire Bastion sans installer Unity
 
-Trois workflows GitHub Actions font tout le travail dans le nuage. Vous n'avez
+Deux workflows GitHub Actions font tout le travail dans le nuage. Vous n'avez
 besoin ni d'Unity, ni d'Android Studio, ni d'un ordinateur puissant.
 
 | Workflow | Produit | Déclenché par |
 |---|---|---|
-| `unity-activation.yml` | le fichier de licence, **une seule fois** | manuellement |
 | `build-apk.yml` | un **APK** à installer sur le téléphone | tout push sur `main` |
 | `build-webgl.yml` | un **build navigateur**, déployé sur Vercel | tout push sur `main` |
 
@@ -16,63 +15,48 @@ c'est ce qui rend la construction dans le nuage possible.
 
 ---
 
-## Étape 1 — Obtenir la licence Unity
+## Étape 1 — Déclarer les identifiants Unity
 
-C'est la seule étape qui résiste, et autant être direct : **Unity a supprimé
-l'activation manuelle des licences Personal.** La page de dépôt l'annonce
-elle-même. Deux voies restent, à essayer dans cet ordre.
-
-### Voie A — Déposer quand même le fichier .alf
-
-Le fichier est produit par le workflow *Unity – Demander le fichier
-d'activation*, sans rien installer. Déposez-le sur
-https://license.unity3d.com/manual.
-
-Sur l'écran suivant, si seule l'option « Unity Pro ou Plus » s'affiche, GameCI
-documente un contournement : clic droit sur la page, *Inspecter*, repérez la
-ligne HTML de l'option Personal et supprimez `display: none;` de son attribut
-`style`. L'option redevient sélectionnable.
-
-Ce contournement dépend du code de la page d'Unity et peut cesser de
-fonctionner sans préavis. S'il échoue, passez à la voie B.
-
-### Voie B — Unity Hub en local, sans l'éditeur
-
-Procédure officielle de GameCI depuis la suppression de l'activation manuelle.
-Elle demande une installation, mais **seulement Unity Hub, jamais l'éditeur** :
-quelques centaines de Mo, au lieu de la dizaine de Go qu'exige l'éditeur avec le
-module Android.
-
-1. Installez Unity Hub depuis https://unity.com/download.
-2. Connectez-vous avec le compte Unity destiné à la CI.
-3. *Preferences* → *Licenses* → bouton **Add** → **Get a free personal license**.
-   Allez au bout de l'assistant : une licence affichée dans Hub ne garantit pas
-   qu'un fichier `.ulf` a été écrit sur le disque.
-4. Récupérez ce fichier :
-   - Windows : `C:\ProgramData\Unity\Unity_lic.ulf`
-   - macOS : `/Library/Application Support/Unity/Unity_lic.ulf`
-   - Linux : `~/.local/share/unity3d/Unity/Unity_lic.ulf`
-
-La licence n'est liée ni à une version d'Unity ni à un système d'exploitation.
-Activez-la sur la machine qui vous arrange, le fichier servira aux constructions
-Linux de la CI.
-
-
----
-
-## Étape 2 — Déclarer les secrets GitHub
+Deux secrets, aucun fichier, aucune installation.
 
 **Settings → Secrets and variables → Actions → New repository secret.**
 
-Obligatoires :
-
 | Secret | Contenu |
 |---|---|
-| `UNITY_LICENSE` | tout le contenu du fichier `.ulf` de l'étape 1 |
-| `UNITY_EMAIL` | l'adresse de votre compte Unity |
+| `UNITY_EMAIL` | l'adresse du compte Unity |
 | `UNITY_PASSWORD` | le mot de passe de ce compte |
 
-Facultatifs, uniquement pour publier le WebGL en ligne automatiquement :
+GameCI demande alors un siège Personal directement au service de licence
+d'Unity. **Ne déclarez pas `UNITY_LICENSE`** : dès que ce secret existe sans
+`UNITY_SERIAL`, GameCI bascule en activation par fichier et réclame un `.ulf`
+qu'un compte gratuit ne peut plus obtenir.
+
+C'est là qu'aboutit l'ancienne procédure `.alf` vers `.ulf`, qui ne fonctionne
+plus : **Unity a supprimé l'activation hors ligne des licences Personal.** La
+page de dépôt ne propose plus que les sièges Enterprise et Industry, ou un
+numéro de série Plus/Pro.
+
+Trois conditions sur le compte, sans quoi l'activation échoue en tête de
+construction :
+
+- **Pas de double authentification.** Une activation sans interface ne peut
+  répondre ni à un code, ni à une validation d'appareil.
+- **Un vrai compte Unity ID avec mot de passe.** Une connexion via Google,
+  Facebook ou Apple n'en a pas.
+- **Un compte dédié à l'intégration continue de préférence.** Les exécutions
+  changent d'adresse IP à chaque fois, et Unity peut envoyer une demande de
+  confirmation de nouvel appareil.
+
+Un siège Personal reste retenu pendant toute la construction et le compte en
+compte très peu. GameCI le rend via un piège de sortie, y compris quand la
+construction échoue. Les deux workflows partagent pour cette raison un même
+groupe de concurrence : ils se suivent au lieu de se disputer le siège.
+
+---
+
+## Étape 2 — Secrets Vercel, facultatifs
+
+Uniquement pour publier le WebGL en ligne automatiquement :
 
 | Secret | Où le trouver |
 |---|---|
@@ -80,10 +64,11 @@ Facultatifs, uniquement pour publier le WebGL en ligne automatiquement :
 | `VERCEL_ORG_ID` | Vercel → Settings du compte ou de l'équipe → *ID* |
 | `VERCEL_PROJECT_ID` | Vercel → le projet → Settings → General → *Project ID* |
 
-Sans ces trois-là le workflow WebGL fonctionne quand même : il s'arrête juste
-avant le déploiement et le build reste téléchargeable depuis l'onglet Actions.
+Sans eux le workflow WebGL fonctionne quand même : il s'arrête juste avant le
+déploiement et le build reste téléchargeable depuis l'onglet Actions.
 
 ---
+
 
 ## Étape 3 — Créer le projet Vercel (facultatif)
 
@@ -142,9 +127,10 @@ serveur statique local.
   publiées. Si vous changez de version d'Unity, vérifiez d'abord que les images
   correspondantes existent, sinon la construction s'arrête sur une image
   introuvable.
-- **N'utilisez pas `game-ci/unity-request-activation-file`.** Cette action a été
-  retirée et échoue en six secondes sur « This action is no longer supported ».
-  Le workflow d'activation appelle directement l'image Unity à la place.
+- **La voie `.alf` vers `.ulf` est morte.** L'action
+  `game-ci/unity-request-activation-file` a été retirée, et Unity a de toute
+  façon supprimé l'activation hors ligne des licences Personal. L'activation se
+  fait désormais par identifiants, décrite à l'étape 1.
 - **Un push n'est pas une livraison.** Le workflow peut être rouge pendant que
   tout le reste est vert. Regardez l'onglet Actions avant d'annoncer une version.
 - **En cas d'échec, l'artefact `journal-unity-*` contient le log Unity complet** :

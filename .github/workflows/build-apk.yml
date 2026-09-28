@@ -9,8 +9,8 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: td-apk-${{ github.ref }}
-  cancel-in-progress: true
+  group: siege-unity-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   build-apk:
@@ -25,10 +25,10 @@ jobs:
 
       # Sans licence, GameCI échoue au bout de plusieurs minutes sur un message obscur.
       # Autant le dire tout de suite, en nommant le secret manquant.
-      - name: Vérifier que la licence Unity est configurée
+      - name: Vérifier que les identifiants Unity sont configurés
         run: |
-          if [ -z "${{ secrets.UNITY_LICENSE }}" ]; then
-            echo "::error::Le secret UNITY_LICENSE est absent. Voir CI_CD_SETUP.md, étape 1."
+          if [ -z "${{ secrets.UNITY_EMAIL }}" ] || [ -z "${{ secrets.UNITY_PASSWORD }}" ]; then
+            echo "::error::Les secrets UNITY_EMAIL et UNITY_PASSWORD sont requis. Voir CI_CD_SETUP.md, étape 1."
             exit 1
           fi
 
@@ -46,7 +46,6 @@ jobs:
       - name: Construire avec Unity
         uses: game-ci/unity-builder@v4
         env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:

@@ -6,17 +6,16 @@ le dépôt contient la recette, pas les fichiers YAML fragiles.
 
 ## Démarrage — sans rien installer
 
-**Unity n'est pas nécessaire pour jouer ni pour construire le jeu.** Trois workflows
+**Unity n'est pas nécessaire pour jouer ni pour construire le jeu.** Deux workflows
 GitHub Actions s'en chargent dans le nuage, à chaque push sur `main` :
 
 - l'**APK Android**, à récupérer dans l'onglet *Actions* et à installer sur le téléphone ;
 - la **version navigateur**, déployée sur Vercel et jouable sur PC comme sur mobile.
 
-Une seule mise en place est requise : fournir une licence Unity. Depuis qu'Unity a
-supprimé l'activation manuelle des licences Personal, cette étape peut exiger
-d'installer **Unity Hub**, mais jamais l'éditeur, soit quelques centaines de Mo au lieu
-d'une dizaine de Go. Les deux voies possibles et leurs pièges :
-**[CI_CD_SETUP.md](CI_CD_SETUP.md)**.
+Une seule mise en place est requise, et elle tient en deux secrets GitHub :
+`UNITY_EMAIL` et `UNITY_PASSWORD`. GameCI demande un siège Personal directement à
+Unity avec ces identifiants, aucun fichier de licence n'est nécessaire. Conditions
+sur le compte et pièges : **[CI_CD_SETUP.md](CI_CD_SETUP.md)**.
 
 ## Développer dans l'éditeur Unity (facultatif)
 
