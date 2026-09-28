@@ -52,6 +52,7 @@ jobs:
           projectPath: .
           targetPlatform: Android
           buildMethod: Bastion.EditorTools.AndroidBuildSettings.CIBuildApk
+          androidTargetSdkVersion: 35
           versioning: None
           allowDirtyBuild: true
           manualExit: true

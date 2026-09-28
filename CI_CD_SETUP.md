@@ -127,6 +127,11 @@ serveur statique local.
   publiées. Si vous changez de version d'Unity, vérifiez d'abord que les images
   correspondantes existent, sinon la construction s'arrête sur une image
   introuvable.
+- **`androidTargetSdkVersion` est obligatoire ici.** Sans lui, GameCI lit le
+  niveau d'API dans `ProjectSettings/ProjectSettings.asset`, que ce dépôt ne
+  versionne pas puisqu'il ne contient que la recette. Le `grep` échoue,
+  `sdkmanager` reçoit `platforms;android-` sans numéro et la construction meurt
+  avant même de lancer Unity.
 - **L'action doit être en `v6`.** Les versions `v4` et `v5` refusent de démarrer
   sans `UNITY_LICENSE` ou `UNITY_SERIAL`, sur le message « Missing Unity License
   File and no Serial was found ». Elles bloquent sur leur propre validation,
