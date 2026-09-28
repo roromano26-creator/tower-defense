@@ -57,6 +57,10 @@ jobs:
           allowDirtyBuild: true
           manualExit: true
 
+      - name: Rendre la sortie lisible
+        if: success()
+        run: sudo chown -R "$USER" Builds
+
       - name: Publier l'APK
         if: success()
         uses: actions/upload-artifact@v4

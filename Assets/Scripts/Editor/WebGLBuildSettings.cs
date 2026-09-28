@@ -74,6 +74,15 @@ namespace Bastion.EditorTools
                     return;
                 }
                 Debug.Log($"[CI] WebGL construit — {report.summary.totalSize / (1024 * 1024)} Mo");
+                // GameCI ne lit pas le disque pour juger la construction : son validateBuild
+                // cherche littéralement « Build succeeded! » dans la sortie, ou une section
+                // « # Build results # ». C'est le contrat que remplit son propre builder, et
+                // qu'une méthode de construction maison doit remplir aussi, sinon une
+                // construction réussie est rapportée en échec. Unity écrit bien « Build
+                // succeeded » de son côté, mais sans le point d'exclamation : ce n'est pas
+                // le même marqueur. Émis uniquement ici, sur le chemin où BuildResult vaut
+                // déjà Succeeded, donc sans rien affirmer de faux.
+                Debug.Log("Build succeeded!");
                 EditorApplication.Exit(0);
             }
             catch (System.Exception ex)
