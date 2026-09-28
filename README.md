@@ -12,9 +12,11 @@ GitHub Actions s'en chargent dans le nuage, à chaque push sur `main` :
 - l'**APK Android**, à récupérer dans l'onglet *Actions* et à installer sur le téléphone ;
 - la **version navigateur**, déployée sur Vercel et jouable sur PC comme sur mobile.
 
-Une seule mise en place est requise, elle-même sans installation : la licence Unity
-s'obtient via le workflow *Unity – Demander le fichier d'activation*, qui produit le
-fichier à déposer sur une page web. Marche à suivre et pièges : **[CI_CD_SETUP.md](CI_CD_SETUP.md)**.
+Une seule mise en place est requise : fournir une licence Unity. Depuis qu'Unity a
+supprimé l'activation manuelle des licences Personal, cette étape peut exiger
+d'installer **Unity Hub**, mais jamais l'éditeur, soit quelques centaines de Mo au lieu
+d'une dizaine de Go. Les deux voies possibles et leurs pièges :
+**[CI_CD_SETUP.md](CI_CD_SETUP.md)**.
 
 ## Développer dans l'éditeur Unity (facultatif)
 

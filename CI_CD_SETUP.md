@@ -16,21 +16,47 @@ c'est ce qui rend la construction dans le nuage possible.
 
 ---
 
-## Étape 1 — Obtenir la licence Unity (une seule fois, ~5 minutes)
+## Étape 1 — Obtenir la licence Unity
 
-Une licence **Personal** suffit, elle est gratuite. Il faut la transformer en
-fichier texte que GitHub pourra utiliser.
+C'est la seule étape qui résiste, et autant être direct : **Unity a supprimé
+l'activation manuelle des licences Personal.** La page de dépôt l'annonce
+elle-même. Deux voies restent, à essayer dans cet ordre.
 
-1. Créez un compte sur https://id.unity.com si vous n'en avez pas.
-2. Sur GitHub : onglet **Actions** → workflow **Unity – Demander le fichier
-   d'activation** → **Run workflow**.
-3. Comptez quelques minutes, le temps de télécharger l'image Unity. Ouvrez
-   ensuite l'exécution et téléchargez l'artefact **licence-unity-alf**.
-   Décompressez-le : vous obtenez un fichier `.alf`.
-4. Allez sur https://license.unity3d.com/manual, connectez-vous, déposez le `.alf`,
-   choisissez **Unity Personal** puis *Personal Edition*.
-5. Unity vous renvoie un fichier `.ulf`. Ouvrez-le dans un éditeur de texte et
-   **copiez tout son contenu** (c'est du XML, gardez les premières et dernières lignes).
+### Voie A — Déposer quand même le fichier .alf
+
+Le fichier est produit par le workflow *Unity – Demander le fichier
+d'activation*, sans rien installer. Déposez-le sur
+https://license.unity3d.com/manual.
+
+Sur l'écran suivant, si seule l'option « Unity Pro ou Plus » s'affiche, GameCI
+documente un contournement : clic droit sur la page, *Inspecter*, repérez la
+ligne HTML de l'option Personal et supprimez `display: none;` de son attribut
+`style`. L'option redevient sélectionnable.
+
+Ce contournement dépend du code de la page d'Unity et peut cesser de
+fonctionner sans préavis. S'il échoue, passez à la voie B.
+
+### Voie B — Unity Hub en local, sans l'éditeur
+
+Procédure officielle de GameCI depuis la suppression de l'activation manuelle.
+Elle demande une installation, mais **seulement Unity Hub, jamais l'éditeur** :
+quelques centaines de Mo, au lieu de la dizaine de Go qu'exige l'éditeur avec le
+module Android.
+
+1. Installez Unity Hub depuis https://unity.com/download.
+2. Connectez-vous avec le compte Unity destiné à la CI.
+3. *Preferences* → *Licenses* → bouton **Add** → **Get a free personal license**.
+   Allez au bout de l'assistant : une licence affichée dans Hub ne garantit pas
+   qu'un fichier `.ulf` a été écrit sur le disque.
+4. Récupérez ce fichier :
+   - Windows : `C:\ProgramData\Unity\Unity_lic.ulf`
+   - macOS : `/Library/Application Support/Unity/Unity_lic.ulf`
+   - Linux : `~/.local/share/unity3d/Unity/Unity_lic.ulf`
+
+La licence n'est liée ni à une version d'Unity ni à un système d'exploitation.
+Activez-la sur la machine qui vous arrange, le fichier servira aux constructions
+Linux de la CI.
+
 
 ---
 
