@@ -12,6 +12,30 @@ namespace Bastion.EditorTools
     /// </summary>
     public static class URPSetup
     {
+
+        /// <summary>
+        /// URP 17 a rendu ces quatre réglages en lecture seule sur l'asset ; leurs champs
+        /// sérialisés restent la seule voie pour les écrire depuis l'éditeur. Un champ
+        /// introuvable est signalé sans être fatal : le nom interne peut changer d'une
+        /// version d'URP à l'autre, et perdre un réglage d'éclairage ne justifie pas de
+        /// faire échouer toute la génération du projet.
+        /// </summary>
+        private static void ReglerEclairage(UniversalRenderPipelineAsset asset)
+        {
+            var so = new SerializedObject(asset);
+            Ecrire(so, "m_MainLightRenderingMode", p => p.intValue = (int)LightRenderingMode.PerPixel);
+            Ecrire(so, "m_MainLightShadowsSupported", p => p.boolValue = true);
+            Ecrire(so, "m_AdditionalLightsRenderingMode", p => p.intValue = (int)LightRenderingMode.Disabled);
+            Ecrire(so, "m_AdditionalLightShadowsSupported", p => p.boolValue = false);
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static void Ecrire(SerializedObject so, string champ, System.Action<SerializedProperty> valeur)
+        {
+            var p = so.FindProperty(champ);
+            if (p == null) { Debug.LogWarning($"URP : champ sérialisé '{champ}' introuvable, réglage ignoré."); return; }
+            valeur(p);
+        }
         public static UniversalRenderPipelineAsset Apply()
         {
             var rendererData = BastionPaths.GetOrCreate($"{BastionPaths.Settings}/BastionRenderer.asset", () =>
@@ -39,11 +63,8 @@ namespace Bastion.EditorTools
             asset.supportsDynamicBatching = false;             // le SRP Batcher fait mieux, et le dynamic batching casse l'instancing
             asset.shadowDistance = 30f;
             asset.shadowCascadeCount = 1;
-            asset.mainLightRenderingMode = LightRenderingMode.PerPixel;
             asset.mainLightShadowmapResolution = 2048;
-            asset.supportsMainLightShadows = true;
-            asset.additionalLightsRenderingMode = LightRenderingMode.Disabled;   // aucune lumière additionnelle : émission + bloom suffisent
-            asset.supportsAdditionalLightShadows = false;
+            ReglerEclairage(asset);   // aucune lumière additionnelle : émission + bloom suffisent
             asset.shadowDepthBias = 1f; asset.shadowNormalBias = 1f;
             asset.colorGradingMode = ColorGradingMode.LowDynamicRange;
             asset.colorGradingLutSize = 32;
@@ -73,7 +94,7 @@ namespace Bastion.EditorTools
             bloom.threshold.Override(1.05f);        // seulement l'émissif bloome, pas la neige blanche
             bloom.scatter.Override(0.65f);
             bloom.highQualityFiltering.Override(false);   // cher sur mobile
-            bloom.skipIterations.Override(1);
+            bloom.maxIterations.Override(5);
 
             var adj = profile.Add<ColorAdjustments>(true);
             adj.postExposure.Override(0.15f);

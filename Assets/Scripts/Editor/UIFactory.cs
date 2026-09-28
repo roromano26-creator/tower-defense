@@ -54,8 +54,8 @@ namespace Bastion.EditorTools
             var lives = Text("Lives", top, "20", 36, new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(90, 0), new Vector2(120, 60), TextAlignmentOptions.Left, Danger);
             var heart = Text("Heart", top, "♥", 40, new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(45, 0), new Vector2(60, 60), TextAlignmentOptions.Center, Danger);
             var livesBar = Image("LivesBar", top, new Color(1, 1, 1, 0.12f), new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(120, -28), new Vector2(150, 8));
-            var livesFill = Image("LivesFill", livesBar, Danger, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-            livesFill.type = Image.Type.Filled; livesFill.fillMethod = Image.FillMethod.Horizontal;
+            var livesFill = Image("LivesFill", livesBar.rectTransform, Danger, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+            livesFill.type = UnityEngine.UI.Image.Type.Filled; livesFill.fillMethod = UnityEngine.UI.Image.FillMethod.Horizontal;
             var gold = Text("Gold", top, "180", 36, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-20, 0), new Vector2(160, 60), TextAlignmentOptions.Right, new Color(1f, 0.8f, 0.3f));
             Text("Coin", top, "●", 30, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(85, 0), new Vector2(40, 60), TextAlignmentOptions.Center, new Color(1f, 0.8f, 0.3f));
             var wave = Text("Wave", top, "Vague 0", 30, new Vector2(1, 0.5f), new Vector2(1, 0.5f), new Vector2(-90, 0), new Vector2(200, 60), TextAlignmentOptions.Right, Ink);
@@ -83,7 +83,7 @@ namespace Bastion.EditorTools
             var bar = Pill("DeployBar", safe, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(0, 20), new Vector2(1180, 150));
             var mana = Image("ManaBar", bar, new Color(1, 1, 1, 0.12f), new Vector2(0, 1), new Vector2(1, 1), new Vector2(24, -18), new Vector2(-24, -8));
             var manaFill = Image("ManaFill", mana.rectTransform, new Color(0.55f, 0.85f, 1f), Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-            manaFill.type = Image.Type.Filled; manaFill.fillMethod = Image.FillMethod.Horizontal;
+            manaFill.type = UnityEngine.UI.Image.Type.Filled; manaFill.fillMethod = UnityEngine.UI.Image.FillMethod.Horizontal;
             var row = Rect("Buttons", bar, new Vector2(0, 0), new Vector2(1, 1), new Vector2(16, 10), new Vector2(-16, -26));
             var layout = row.gameObject.AddComponent<HorizontalLayoutGroup>();
             layout.spacing = 10; layout.childForceExpandWidth = true; layout.childForceExpandHeight = true; layout.childControlWidth = true; layout.childControlHeight = true;
@@ -208,7 +208,7 @@ namespace Bastion.EditorTools
         {
             var img = Image(name, parent, Panel, aMin, aMax, pos, size);
             img.sprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/UISprite.psd");
-            img.type = Image.Type.Sliced; img.pixelsPerUnitMultiplier = 0.35f;
+            img.type = UnityEngine.UI.Image.Type.Sliced; img.pixelsPerUnitMultiplier = 0.35f;
             return img.rectTransform;
         }
 
@@ -226,7 +226,7 @@ namespace Bastion.EditorTools
         {
             var img = Image(name, parent, color, aMin, aMax, pos, size);
             img.sprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/UISprite.psd");
-            img.type = Image.Type.Sliced; img.pixelsPerUnitMultiplier = 0.5f;
+            img.type = UnityEngine.UI.Image.Type.Sliced; img.pixelsPerUnitMultiplier = 0.5f;
             var b = img.gameObject.AddComponent<Button>();
             var colors = b.colors; colors.pressedColor = new Color(0.8f, 0.8f, 0.8f); colors.disabledColor = new Color(1, 1, 1, 0.35f); colors.fadeDuration = 0.05f; b.colors = colors;
             var t = Text("Label", img.transform, label, fontSize, Vector2.zero, Vector2.one, new Vector2(8, 4), new Vector2(-8, -4), TextAlignmentOptions.Center, Ink);

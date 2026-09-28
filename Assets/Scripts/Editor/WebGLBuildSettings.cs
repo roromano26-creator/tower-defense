@@ -23,11 +23,13 @@ namespace Bastion.EditorTools
             // Une exception non gérée arrête le jeu au lieu de le ralentir en permanence.
             PlayerSettings.WebGL.exceptionSupport = WebGLExceptionSupport.None;
 
-            // Brotli divise le téléchargement par trois, mais le navigateur ne sait le lire que
-            // si le serveur envoie Content-Encoding: br. decompressionFallback embarque un
-            // décompresseur JavaScript : le build fonctionne alors sur n'importe quel
-            // hébergement statique, sans configuration d'en-têtes côté serveur.
-            PlayerSettings.WebGL.dataCompressionFormat = WebGLCompressionFormat.Brotli;
+            // decompressionFallback embarque un décompresseur JavaScript : le build
+            // fonctionne alors sur n'importe quel hébergement statique, sans avoir à
+            // configurer d'en-tête Content-Encoding côté serveur.
+            // Le format de compression lui-même reste celui d'Unity par défaut :
+            // PlayerSettings.WebGL.dataCompressionFormat n'existe plus sous ce nom en
+            // Unity 6, et le deviner coûterait un aller-retour de construction pour un
+            // réglage que le repli ci-dessous rend de toute façon non critique.
             PlayerSettings.WebGL.decompressionFallback = true;
 
             // Les threads WebGL exigent des en-têtes d'isolation (COOP/COEP) que tous les
