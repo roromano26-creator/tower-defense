@@ -127,6 +127,11 @@ serveur statique local.
   publiées. Si vous changez de version d'Unity, vérifiez d'abord que les images
   correspondantes existent, sinon la construction s'arrête sur une image
   introuvable.
+- **L'action doit être en `v6`.** Les versions `v4` et `v5` refusent de démarrer
+  sans `UNITY_LICENSE` ou `UNITY_SERIAL`, sur le message « Missing Unity License
+  File and no Serial was found ». Elles bloquent sur leur propre validation,
+  avant même de lancer Unity, alors que l'activation par identifiants existe.
+  Seule `v6` laisse passer.
 - **La voie `.alf` vers `.ulf` est morte.** L'action
   `game-ci/unity-request-activation-file` a été retirée, et Unity a de toute
   façon supprimé l'activation hors ligne des licences Personal. L'activation se
