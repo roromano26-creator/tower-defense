@@ -54,38 +54,52 @@ groupe de concurrence : ils se suivent au lieu de se disputer le siège.
 
 ---
 
-## Étape 2 — Secrets Vercel, facultatifs
+## Étape 2 — Mettre le jeu en ligne avec Vercel (facultatif)
 
-Uniquement pour publier le WebGL en ligne automatiquement :
+Sans cette étape tout fonctionne : le workflow s'arrête juste avant le
+déploiement et le build reste téléchargeable depuis l'onglet Actions. Elle sert
+uniquement à obtenir une adresse web à partager, jouable sur PC comme sur mobile.
+
+L'ordre compte : le projet doit exister avant que son identifiant soit relevable.
+
+**1. Créer le projet.** Sur https://vercel.com/new, importez ce dépôt. Choisissez
+*Other* comme framework, et laissez la commande de build et le dossier de sortie
+vides.
+
+**2. Ignorer l'échec du premier déploiement.** Vercel va tenter de construire le
+dépôt tout seul et n'y arrivera pas : il n'y a pas de site à la racine, seulement
+un projet Unity. C'est attendu. Seul l'identifiant du projet nous intéresse.
+
+**3. Couper l'intégration Git**, dans *Settings* → *Git* → *Disconnect*. Sans
+cela Vercel redéploiera de son côté à chaque push, en écrasant le vrai build avec
+sa propre tentative ratée. Le projet garde son identifiant, et seul le workflow
+y déposera désormais quelque chose.
+
+**4. Relever les trois valeurs** et les déclarer en secrets GitHub, comme à
+l'étape 1 :
 
 | Secret | Où le trouver |
 |---|---|
-| `VERCEL_TOKEN` | https://vercel.com/account/tokens |
-| `VERCEL_ORG_ID` | Vercel → Settings du compte ou de l'équipe → *ID* |
-| `VERCEL_PROJECT_ID` | Vercel → le projet → Settings → General → *Project ID* |
+| `VERCEL_TOKEN` | https://vercel.com/account/tokens, bouton *Create Token* |
+| `VERCEL_ORG_ID` | *Settings* du compte ou de l'équipe, champ *ID* |
+| `VERCEL_PROJECT_ID` | le projet → *Settings* → *General* → *Project ID* |
 
-Sans eux le workflow WebGL fonctionne quand même : il s'arrête juste avant le
-déploiement et le build reste téléchargeable depuis l'onglet Actions.
+Les trois sont requis. S'il en manque un, le workflow le nomme et s'arrête
+proprement sans déployer.
 
----
+**5. Relancer le workflow WebGL.** L'adresse s'affiche dans le résumé de
+l'exécution, et dans le journal de l'étape de déploiement.
 
-
-## Étape 3 — Créer le projet Vercel (facultatif)
-
-1. https://vercel.com/new → importez ce dépôt.
-2. **Framework Preset** : *Other*. Laissez la commande de build et le dossier de
-   sortie vides : c'est le workflow qui téléverse les fichiers déjà construits.
-3. Déployez une fois à vide, puis récupérez le *Project ID* dans les réglages
-   pour le secret de l'étape 2.
-
-Aucune configuration d'en-têtes n'est nécessaire : le build active
-`decompressionFallback`, donc le navigateur décompresse lui-même les fichiers
-Brotli. C'est un peu de JavaScript en plus, contre la garantie que le jeu
-fonctionne sur n'importe quel hébergement statique.
+Aucune configuration d'en-têtes n'est nécessaire, et il ne faut surtout pas en
+ajouter : le build active `decompressionFallback`, donc c'est le décompresseur
+JavaScript d'Unity qui lit les fichiers Brotli. Annoncer `Content-Encoding: br`
+au navigateur le ferait décompresser en amont, et le décompresseur d'Unity
+recevrait des données déjà en clair qu'il ne saurait pas relire. C'est ce qui
+rend le jeu hébergeable tel quel sur n'importe quel serveur statique.
 
 ---
 
-## Étape 4 — Lancer une construction
+## Étape 3 — Lancer une construction
 
 Automatique à chaque push sur `main` :
 
@@ -103,7 +117,7 @@ tombent à 15–30 minutes.
 
 ---
 
-## Étape 5 — Récupérer le jeu
+## Étape 4 — Récupérer le jeu
 
 **L'APK** : onglet Actions → l'exécution terminée → section *Artifacts* →
 `bastion-apk`. Décompressez, transférez `Bastion.apk` sur le téléphone et

@@ -74,14 +74,41 @@ jobs:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
-          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
-            echo "Secrets Vercel absents : déploiement ignoré, l'artefact bastion-webgl reste téléchargeable."
+          # pipefail : sans lui, un échec de vercel serait masqué par le tee qui suit
+          # et l'étape passerait au vert sans avoir rien déployé.
+          set -o pipefail
+
+          manquants=""
+          if [ -z "$VERCEL_TOKEN" ];      then manquants="$manquants VERCEL_TOKEN"; fi
+          if [ -z "$VERCEL_ORG_ID" ];     then manquants="$manquants VERCEL_ORG_ID"; fi
+          if [ -z "$VERCEL_PROJECT_ID" ]; then manquants="$manquants VERCEL_PROJECT_ID"; fi
+          if [ -n "$manquants" ]; then
+            echo "Secrets absents :$manquants"
+            echo "Déploiement ignoré. L'artefact bastion-webgl reste téléchargeable."
+            echo "Marche à suivre : CI_CD_SETUP.md, section Vercel."
             exit 0
           fi
-          url=$(npx --yes vercel@latest deploy Builds/WebGL \
-                  --prod --yes --token "$VERCEL_TOKEN")
+
+          # Aucun en-tête Content-Encoding n'est posé sur les fichiers .br, et c'est
+          # délibéré. Le build active decompressionFallback : c'est le décompresseur
+          # JavaScript d'Unity qui lit ces fichiers. Annoncer « br » au navigateur le
+          # ferait décompresser en amont, et le décompresseur d'Unity recevrait des
+          # données déjà en clair qu'il ne saurait pas relire. Ne pas « corriger »
+          # cela en ajoutant un vercel.json d'en-têtes.
+          npx --yes vercel@latest deploy Builds/WebGL \
+            --prod --yes --token "$VERCEL_TOKEN" | tee sortie-vercel.txt
+
+          url=$(grep -oE 'https://[A-Za-z0-9._-]+\.vercel\.app' sortie-vercel.txt | tail -n1)
+          if [ -z "$url" ]; then
+            echo "::error::Déploiement terminé sans adresse exploitable. Voir la sortie ci-dessus."
+            exit 1
+          fi
           echo "Jouable ici : $url"
-          echo "### Tower Defense jouable : $url" >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "### Bastion est jouable"
+            echo ""
+            echo "$url"
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Publier le journal en cas d'échec
         if: failure()
