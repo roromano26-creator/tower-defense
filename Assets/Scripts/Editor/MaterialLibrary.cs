@@ -33,7 +33,7 @@ namespace Bastion.EditorTools
             {
                 var m = new Material(shader) { name = "M_Contour" };
                 m.SetColor("_CouleurContour", Hex("#0C0C14"));
-                m.SetFloat("_Epaisseur", 0.025f);
+                m.SetFloat("_Epaisseur", 0.045f);
                 return m;
             });
         }

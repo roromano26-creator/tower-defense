@@ -57,12 +57,18 @@ namespace Bastion.EditorTools
             var contour = MaterialLibrary.Contour();
             if (contour == null) return;           // shader absent : on renonce au liseré, pas au visuel
 
+            int decorees = 0;
             foreach (var r in root.GetComponentsInChildren<MeshRenderer>())
             {
                 if (r.sharedMaterial == null) continue;
                 if (r.sharedMaterial.shader != null && r.sharedMaterial.shader.name.Contains("Particles")) continue;
                 r.sharedMaterials = new[] { r.sharedMaterial, contour };
+                decorees++;
             }
+            // Journalisé : un liseré invisible peut venir d'une épaisseur trop faible ou
+            // d'une application qui n'a jamais eu lieu. Le compte tranche entre les deux
+            // sans avoir à relancer le jeu pour regarder.
+            Debug.Log($"[Contour] {root.name} : {decorees} pièces décorées.");
         }
 
         private static void NoShadows(GameObject go) { foreach (var r in go.GetComponentsInChildren<Renderer>()) r.shadowCastingMode = ShadowCastingMode.Off; }

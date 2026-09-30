@@ -79,9 +79,9 @@ jobs:
       - name: Diagnostic TextMeshPro
         if: always()
         run: |
-          echo "--- lignes [TMP] du journal Unity ---"
-          grep -h "\[TMP\]" *.log Logs/*.log 2>/dev/null \
-            || echo "(aucune ligne [TMP] : la génération n'a pas atteint cette étape)"
+          echo "--- diagnostic TextMeshPro et contour ---"
+          grep -hE "\[TMP\]|\[Contour\]" *.log Logs/*.log 2>/dev/null | sort | uniq -c | sort -rn | head -20 \
+            || echo "(aucune ligne de diagnostic : la génération n'a pas atteint cette étape)"
 
       - name: Publier le WebGL
         if: success()
