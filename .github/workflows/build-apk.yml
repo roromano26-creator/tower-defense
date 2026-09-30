@@ -66,16 +66,6 @@ jobs:
         if: success()
         run: sudo chown -R "$USER" Builds
 
-      - name: Diagnostic TextMeshPro
-        if: always()
-        run: |
-          echo "--- compte-rendu de génération ---"
-          if [ -f diagnostic-generation.txt ]; then
-            sort diagnostic-generation.txt | uniq -c | sort -rn | head -25
-          else
-            echo "(diagnostic-generation.txt absent : la génération n'est pas allée au bout)"
-          fi
-
       - name: Publier l'APK
         if: success()
         uses: actions/upload-artifact@v4
@@ -86,6 +76,16 @@ jobs:
           retention-days: 30
 
       # Le journal Unity est la seule trace exploitable quand la construction échoue.
+      - name: Compte-rendu de génération
+        if: always()
+        run: |
+          echo "--- compte-rendu de génération ---"
+          if [ -f diagnostic-generation.txt ]; then
+            sort diagnostic-generation.txt | uniq -c | sort -rn | head -25
+          else
+            echo "(diagnostic-generation.txt absent : la génération n'est pas allée au bout)"
+          fi
+
       - name: Publier le journal en cas d'échec
         if: failure()
         uses: actions/upload-artifact@v4

@@ -26,14 +26,28 @@ namespace Bastion.EditorTools
             var shader = Shader.Find("Bastion/Contour");
             if (shader == null)
             {
-                Debug.LogWarning("[Contour] Shader « Bastion/Contour » introuvable : liseré désactivé.");
+                Diagnostic.Noter("[Contour] shader « Bastion/Contour » introuvable : liseré désactivé.");
                 return null;
             }
+
+            // Un shader qui ne compile pas reste trouvable : Shader.Find le renvoie, et
+            // Unity dessine l'objet en magenta. Comme la passe de contour ne couvre qu'un
+            // liseré de quelques pixels, ce magenta-là ne se voit nulle part, et une
+            // erreur de compilation ressemble alors exactement à un liseré absent. On le
+            // demande donc explicitement, la réponse tranche entre les deux.
+            Diagnostic.Noter(ShaderUtil.ShaderHasError(shader)
+                ? "[Contour] le shader NE COMPILE PAS : " + ShaderUtil.GetShaderMessageCount(shader) + " message(s)."
+                : "[Contour] shader compilé, supporté = " + shader.isSupported + ".");
+
             return BastionPaths.GetOrCreate($"{BastionPaths.Materials}/M_Contour.mat", () =>
             {
                 var m = new Material(shader) { name = "M_Contour" };
                 m.SetColor("_CouleurContour", Hex("#0C0C14"));
-                m.SetFloat("_Epaisseur", 0.045f);
+                // 4,5 cm sur une case de 2 m ne faisaient guère plus d'un pixel à la
+                // distance de jeu : trop fin pour se voir, donc impossible à distinguer
+                // d'un liseré qui ne s'affiche pas du tout. On épaissit assez pour que la
+                // question soit tranchée à l'œil.
+                m.SetFloat("_Epaisseur", 0.09f);
                 return m;
             });
         }
