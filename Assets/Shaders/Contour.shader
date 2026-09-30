@@ -22,6 +22,12 @@ Shader "Bastion/Contour"
         Pass
         {
             Name "Contour"
+            // Sans cette étiquette, URP ne sait pas à quel moment du rendu exécuter la
+            // passe et peut ne jamais la dessiner : le liseré reste alors invisible sans
+            // qu'aucune erreur ne soit signalée nulle part. C'est la cause la plus
+            // probable d'un contour qui ne s'affiche ni en 2.5 cm ni en 4.5 cm.
+            Tags { "LightMode" = "SRPDefaultUnlit" }
+
             Cull Front          // seules les faces arrière : la coque n'apparaît qu'autour
             ZWrite On
             ZTest LEqual

@@ -50,6 +50,7 @@ namespace Bastion.EditorTools
                 AndroidBuildSettings.Apply();
                 AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
+                Diagnostic.Ecrire();
                 Debug.Log("Bastion : projet généré. Ouvrez Assets/Scenes/Menu.unity et appuyez sur Play.");
             }
             finally { EditorUtility.ClearProgressBar(); }

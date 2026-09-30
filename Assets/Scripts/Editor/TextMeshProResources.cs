@@ -21,7 +21,7 @@ namespace Bastion.EditorTools
         {
             if (Presentes())
             {
-                Debug.Log("[TMP] Ressources essentielles déjà présentes.");
+                Diagnostic.Noter("[TMP] Ressources essentielles déjà présentes.");
                 return;
             }
 
@@ -38,7 +38,7 @@ namespace Bastion.EditorTools
 
             // Journalisé dans les deux cas : c'est la seule façon de savoir, depuis le
             // journal d'une construction, si les textes sortiront lisibles ou vides.
-            Debug.Log(Presentes()
+            Diagnostic.Noter(Presentes()
                 ? "[TMP] Ressources essentielles importées, police par défaut disponible."
                 : "[TMP] Import effectué mais aucune police par défaut : textes encore invisibles.");
         }

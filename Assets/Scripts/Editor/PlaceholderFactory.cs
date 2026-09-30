@@ -55,7 +55,7 @@ namespace Bastion.EditorTools
         private static void AjouterContour(GameObject root)
         {
             var contour = MaterialLibrary.Contour();
-            if (contour == null) return;           // shader absent : on renonce au liseré, pas au visuel
+            if (contour == null) { Diagnostic.Noter("[Contour] matériau absent : liseré non appliqué."); return; }           // shader absent : on renonce au liseré, pas au visuel
 
             int decorees = 0;
             foreach (var r in root.GetComponentsInChildren<MeshRenderer>())
@@ -68,7 +68,7 @@ namespace Bastion.EditorTools
             // Journalisé : un liseré invisible peut venir d'une épaisseur trop faible ou
             // d'une application qui n'a jamais eu lieu. Le compte tranche entre les deux
             // sans avoir à relancer le jeu pour regarder.
-            Debug.Log($"[Contour] {root.name} : {decorees} pièces décorées.");
+            Diagnostic.Noter($"[Contour] {root.name} : {decorees} pièces décorées.");
         }
 
         private static void NoShadows(GameObject go) { foreach (var r in go.GetComponentsInChildren<Renderer>()) r.shadowCastingMode = ShadowCastingMode.Off; }
