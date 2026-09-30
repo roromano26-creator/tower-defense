@@ -18,6 +18,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
 
+    # Publier sur GitHub Pages demande d'écrire dans Pages et de signer la
+    # provenance du dépôt ; sans ces deux droits l'étape de déploiement est
+    # refusée. contents reste en lecture seule, rien n'est écrit dans le dépôt.
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.pages.outputs.page_url }}
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -51,6 +63,12 @@ jobs:
           versioning: None
           allowDirtyBuild: true
           manualExit: true
+          # Version figée plutôt que « latest » : résoudre la dernière version
+          # demande un appel à l'API GitHub, qui a déjà répondu 403 en limite de
+          # débit après plusieurs constructions rapprochées, faisant échouer le
+          # build avant même de lancer Unity. Une version fixe supprime l'appel,
+          # et rend au passage la construction reproductible.
+          cliVersion: v0.1.69
 
       # GameCI construit dans un conteneur : les fichiers appartiennent à root et
       # les étapes suivantes ne pourraient ni les lire ni les téléverser.
@@ -67,7 +85,45 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-      - name: Déployer sur Vercel
+      # ── Mise en ligne sur GitHub Pages ────────────────────────────────────
+      # Voie principale : hébergée par GitHub, sans compte tiers, sans jeton ni
+      # identifiant à recopier. enablement active Pages sur le dépôt au premier
+      # passage, il n'y a donc rien à cocher dans les réglages.
+      # Les fichiers Brotli sont servis tels quels, sans en-tête d'encodage, ce
+      # qui est exactement ce qu'attend le décompresseur JavaScript d'Unity.
+      - name: Préparer GitHub Pages
+        if: success()
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Empaqueter le jeu pour Pages
+        if: success()
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: Builds/WebGL
+
+      - name: Déployer sur GitHub Pages
+        id: pages
+        if: success()
+        uses: actions/deploy-pages@v4
+
+      - name: Annoncer l'adresse de jeu
+        if: success()
+        run: |
+          {
+            echo "### Bastion est jouable"
+            echo ""
+            echo "${{ steps.pages.outputs.page_url }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "Jouable ici : ${{ steps.pages.outputs.page_url }}"
+
+      # Vercel est désormais secondaire : GitHub Pages met déjà le jeu en ligne.
+      # continue-on-error pour cette raison — un jeton expiré ou une erreur de
+      # configuration côté Vercel ne doit plus faire échouer une construction
+      # par ailleurs réussie, ni masquer l'adresse Pages.
+      - name: Déployer sur Vercel (optionnel)
+        continue-on-error: true
         if: success() && github.ref == 'refs/heads/main'
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}

@@ -54,50 +54,29 @@ groupe de concurrence : ils se suivent au lieu de se disputer le siège.
 
 ---
 
-## Étape 2 — Mettre le jeu en ligne avec Vercel (facultatif)
+## Étape 2 — La mise en ligne, déjà faite
 
-Sans cette étape tout fonctionne : le workflow s'arrête juste avant le
-déploiement et le build reste téléchargeable depuis l'onglet Actions. Elle sert
-uniquement à obtenir une adresse web à partager, jouable sur PC comme sur mobile.
+Rien à configurer. Le workflow publie le jeu sur **GitHub Pages** à chaque
+construction : hébergement GitHub, depuis ce dépôt, sans compte tiers, sans
+jeton ni identifiant à recopier. Pages est activé automatiquement au premier
+passage, il n'y a donc rien à cocher dans les réglages.
 
-L'ordre compte : le projet doit exister avant que son identifiant soit relevable.
+L'adresse s'affiche dans le résumé de l'exécution, et reste ensuite visible dans
+*Settings* → *Pages*.
 
-**1. Créer le projet.** Sur https://vercel.com/new, importez ce dépôt. Choisissez
-*Other* comme framework, et laissez la commande de build et le dossier de sortie
-vides.
+Les fichiers Brotli sont servis tels quels, sans en-tête `Content-Encoding`, ce
+qui est exactement ce qu'attend le décompresseur JavaScript d'Unity activé par
+`decompressionFallback`. Ne pas ajouter d'en-têtes d'encodage : le navigateur
+décompresserait en amont et Unity recevrait des données déjà en clair qu'il ne
+saurait pas relire.
 
-**2. Ignorer l'échec du premier déploiement.** Vercel va tenter de construire le
-dépôt tout seul et n'y arrivera pas : il n'y a pas de site à la racine, seulement
-un projet Unity. C'est attendu. Seul l'identifiant du projet nous intéresse.
+### Vercel, en plus et au choix
 
-**3. Couper l'intégration Git**, dans *Settings* → *Git* → *Disconnect*. Sans
-cela Vercel redéploiera de son côté à chaque push, en écrasant le vrai build avec
-sa propre tentative ratée. Le projet garde son identifiant, et seul le workflow
-y déposera désormais quelque chose.
+Le workflow sait aussi déposer le jeu sur Vercel, si le secret `VERCEL_TOKEN`
+existe. C'est facultatif et **tolérant à l'échec** : un jeton expiré n'empêche
+ni la construction ni la mise en ligne sur Pages. Le projet est lié par son nom,
+`tower-defense`, et créé s'il n'existe pas ; le jeton est le seul secret requis.
 
-**4. Créer le jeton** et le déclarer en secret GitHub, comme à l'étape 1 :
-
-| Secret | Où le trouver |
-|---|---|
-| `VERCEL_TOKEN` | https://vercel.com/account/tokens, bouton *Create Token* |
-
-Un seul secret suffit. Le workflow lie le dossier au projet **par son nom**,
-`tower-defense`, et le crée s'il n'existe pas encore. `VERCEL_ORG_ID` et
-`VERCEL_PROJECT_ID` ne servent plus : recopiés à la main depuis deux pages
-différentes, une seule valeur erronée suffisait à produire « Project not found »
-sans jamais dire laquelle des deux était en cause.
-
-**5. Relancer le workflow WebGL.** L'adresse s'affiche dans le résumé de
-l'exécution, et dans le journal de l'étape de déploiement.
-
-Aucune configuration d'en-têtes n'est nécessaire, et il ne faut surtout pas en
-ajouter : le build active `decompressionFallback`, donc c'est le décompresseur
-JavaScript d'Unity qui lit les fichiers Brotli. Annoncer `Content-Encoding: br`
-au navigateur le ferait décompresser en amont, et le décompresseur d'Unity
-recevrait des données déjà en clair qu'il ne saurait pas relire. C'est ce qui
-rend le jeu hébergeable tel quel sur n'importe quel serveur statique.
-
----
 
 ## Étape 3 — Lancer une construction
 
@@ -147,6 +126,10 @@ serveur statique local.
   écrit « Build succeeded » sans point d'exclamation, ce qui ne correspond pas.
   Sans ce marqueur, une construction parfaitement réussie est rapportée en échec,
   et l'APK produit n'est jamais archivé.
+- **Figer `cliVersion`.** Avec « latest », l'action interroge l'API GitHub pour
+  résoudre la version, et reçoit un 403 en limite de débit après plusieurs
+  constructions rapprochées. Le build échoue alors avant même de lancer Unity,
+  sur une cause qui n'a rien à voir avec le projet.
 - **Le client Vercel a besoin de ses propres dossiers de travail.** Le conteneur
   Unity, qui tourne en root, laisse sous `/home/runner` des dossiers lui
   appartenant. Le client Vercel lancé ensuite ne peut plus créer les siens et

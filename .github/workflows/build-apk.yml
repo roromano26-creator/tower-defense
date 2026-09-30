@@ -53,6 +53,11 @@ jobs:
           targetPlatform: Android
           buildMethod: Bastion.EditorTools.AndroidBuildSettings.CIBuildApk
           androidTargetSdkVersion: 35
+          # Version figée plutôt que « latest » : résoudre la dernière version
+          # demande un appel à l'API GitHub, qui répond 403 en limite de débit
+          # après plusieurs constructions rapprochées, faisant échouer le build
+          # avant même de lancer Unity.
+          cliVersion: v0.1.69
           versioning: None
           allowDirtyBuild: true
           manualExit: true

@@ -14,8 +14,9 @@ GitHub Actions s'en chargent dans le nuage, à chaque push sur `main` :
 
 Une seule mise en place est requise, et elle tient en deux secrets GitHub :
 `UNITY_EMAIL` et `UNITY_PASSWORD`. GameCI demande un siège Personal directement à
-Unity avec ces identifiants, aucun fichier de licence n'est nécessaire. Conditions
-sur le compte et pièges : **[CI_CD_SETUP.md](CI_CD_SETUP.md)**.
+Unity avec ces identifiants, aucun fichier de licence n'est nécessaire. La version
+navigateur est ensuite publiée sur **GitHub Pages** automatiquement, sans compte
+tiers. Conditions sur le compte et pièges : **[CI_CD_SETUP.md](CI_CD_SETUP.md)**.
 
 ## Développer dans l'éditeur Unity (facultatif)
 
