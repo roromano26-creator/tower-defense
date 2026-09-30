@@ -45,6 +45,9 @@ namespace Bastion.Enemies
         {
             alive.Remove(e);
             pools[e.Data].Release(e);
+            // Après le retrait, jamais avant : c'est à cet instant seulement que
+            // AliveCount reflète la réalité pour qui attend la fin d'une vague.
+            Core.GameEvents.EnemyDespawned();
         }
 
         /// <summary>Remplit `buffer` avec les ennemis à portée ; retourne le nombre trouvé.</summary>

@@ -18,6 +18,10 @@ namespace Bastion.Core
         public static event Action<Enemies.Enemy> OnEnemySpawned;
         public static event Action<Enemies.Enemy> OnEnemyKilled;
         public static event Action<Enemies.Enemy> OnEnemyReachedEnd;
+        // Émis une fois l'ennemi réellement retiré du registre, contrairement aux deux
+        // précédents qui partent alors qu'il y figure encore. Compter les vivants depuis
+        // ceux-là trouve toujours au moins l'ennemi en train de mourir.
+        public static event Action OnEnemyDespawned;
         public static event Action<Towers.Tower> OnTowerPlaced;
         public static event Action<Towers.Tower> OnTowerUpgraded;
         public static event Action<Towers.Tower> OnTowerSold;
@@ -36,7 +40,7 @@ namespace Bastion.Core
         {
             OnStateChanged = null; OnGoldChanged = null; OnLivesChanged = null; OnWaveStarted = null;
             OnWaveCompleted = null; OnWaveCountdown = null; OnEnemySpawned = null; OnEnemyKilled = null;
-            OnEnemyReachedEnd = null; OnTowerPlaced = null; OnTowerUpgraded = null; OnTowerSold = null;
+            OnEnemyReachedEnd = null; OnEnemyDespawned = null; OnTowerPlaced = null; OnTowerUpgraded = null; OnTowerSold = null;
             OnTowerSelected = null; OnCameraShakeRequested = null; OnGameSpeedChanged = null; OnGemsEarned = null; OnManaChanged = null; OnAssaultTimer = null;
         }
 
@@ -49,6 +53,7 @@ namespace Bastion.Core
         public static void EnemySpawned(Enemies.Enemy e) => OnEnemySpawned?.Invoke(e);
         public static void EnemyKilled(Enemies.Enemy e) => OnEnemyKilled?.Invoke(e);
         public static void EnemyReachedEnd(Enemies.Enemy e) => OnEnemyReachedEnd?.Invoke(e);
+        public static void EnemyDespawned() => OnEnemyDespawned?.Invoke();
         public static void TowerPlaced(Towers.Tower t) => OnTowerPlaced?.Invoke(t);
         public static void TowerUpgraded(Towers.Tower t) => OnTowerUpgraded?.Invoke(t);
         public static void TowerSold(Towers.Tower t) => OnTowerSold?.Invoke(t);

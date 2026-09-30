@@ -45,15 +45,13 @@ namespace Bastion.Waves
 
         private void OnEnable()
         {
-            GameEvents.OnEnemyKilled += HandleEnemyGone;
-            GameEvents.OnEnemyReachedEnd += HandleEnemyGone;
+            GameEvents.OnEnemyDespawned += CheckWaveEnd;
             GameEvents.OnStateChanged += HandleState;
         }
 
         private void OnDisable()
         {
-            GameEvents.OnEnemyKilled -= HandleEnemyGone;
-            GameEvents.OnEnemyReachedEnd -= HandleEnemyGone;
+            GameEvents.OnEnemyDespawned -= CheckWaveEnd;
             GameEvents.OnStateChanged -= HandleState;
         }
 
@@ -108,8 +106,6 @@ namespace Bastion.Waves
             }
             CheckWaveEnd();
         }
-
-        private void HandleEnemyGone(Enemy _) => CheckWaveEnd();
 
         /// <summary>
         /// Vague générée : un budget de menace croissant dépensé en groupes tirés dans le pool du niveau,
