@@ -32,8 +32,8 @@ namespace Bastion.EditorTools
                 return;
             }
 
-            Debug.Log($"[TMP] Import de {paquet}");
-            AssetDatabase.ImportPackage(paquet, false);
+            Debug.Log($"[TMP] Paquet trouvé : {paquet}");
+            Importer(paquet);
             AssetDatabase.Refresh(ImportAssetOptions.ForceSynchronousImport);
 
             // Journalisé dans les deux cas : c'est la seule façon de savoir, depuis le
@@ -41,6 +41,35 @@ namespace Bastion.EditorTools
             Debug.Log(Presentes()
                 ? "[TMP] Ressources essentielles importées, police par défaut disponible."
                 : "[TMP] Import effectué mais aucune police par défaut : textes encore invisibles.");
+        }
+
+        /// <summary>
+        /// AssetDatabase.ImportPackage rend la main aussitôt et laisse l'éditeur finir
+        /// l'import à une image suivante. En mode sans interface il n'y a pas d'image
+        /// suivante : la construction enchaîne, et rien n'est jamais importé. C'est ce
+        /// qui a produit un build parfaitement identique au précédent, à 52 octets près.
+        ///
+        /// Unity possède une variante immédiate, non publique, que l'on atteint par
+        /// réflexion. Si elle venait à disparaître, on retombe sur la version
+        /// asynchrone : pas pire que la situation actuelle, et le journal le dira.
+        /// </summary>
+        private static void Importer(string paquet)
+        {
+            var immediat = typeof(AssetDatabase).GetMethod(
+                "ImportPackageImmediately",
+                System.Reflection.BindingFlags.Static
+                | System.Reflection.BindingFlags.NonPublic
+                | System.Reflection.BindingFlags.Public);
+
+            if (immediat != null)
+            {
+                Debug.Log("[TMP] Import immédiat.");
+                immediat.Invoke(null, new object[] { paquet });
+                return;
+            }
+
+            Debug.LogWarning("[TMP] Import immédiat indisponible, repli sur l'import différé.");
+            AssetDatabase.ImportPackage(paquet, false);
         }
 
         /// <summary>

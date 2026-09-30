@@ -66,6 +66,13 @@ jobs:
         if: success()
         run: sudo chown -R "$USER" Builds
 
+      - name: Diagnostic TextMeshPro
+        if: always()
+        run: |
+          echo "--- lignes [TMP] du journal Unity ---"
+          grep -h "\[TMP\]" *.log Logs/*.log 2>/dev/null \
+            || echo "(aucune ligne [TMP] : la génération n'a pas atteint cette étape)"
+
       - name: Publier l'APK
         if: success()
         uses: actions/upload-artifact@v4
