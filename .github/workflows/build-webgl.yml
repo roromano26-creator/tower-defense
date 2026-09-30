@@ -71,8 +71,12 @@ jobs:
         if: success() && github.ref == 'refs/heads/main'
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          # VERCEL_ORG_ID et VERCEL_PROJECT_ID ne sont volontairement pas transmis.
+          # Recopiés à la main depuis deux pages différentes de Vercel, une seule
+          # valeur erronée suffisait à produire « Project not found » sans dire
+          # laquelle des deux. Le projet est désormais lié par son nom, qui se
+          # vérifie d'un coup d'œil. S'ils sont présents dans l'environnement, le
+          # client les préfère au lien et l'erreur reviendrait.
           # Le conteneur Unity tourne en root et laisse sous /home/runner des dossiers
           # qui lui appartiennent. Le client Vercel, lancé ensuite par l'utilisateur
           # normal, ne peut alors plus créer les siens et meurt sur EACCES avant
@@ -86,16 +90,17 @@ jobs:
           set -o pipefail
           mkdir -p "$XDG_DATA_HOME" "$XDG_CACHE_HOME"
 
-          manquants=""
-          if [ -z "$VERCEL_TOKEN" ];      then manquants="$manquants VERCEL_TOKEN"; fi
-          if [ -z "$VERCEL_ORG_ID" ];     then manquants="$manquants VERCEL_ORG_ID"; fi
-          if [ -z "$VERCEL_PROJECT_ID" ]; then manquants="$manquants VERCEL_PROJECT_ID"; fi
-          if [ -n "$manquants" ]; then
-            echo "Secrets absents :$manquants"
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "Secret VERCEL_TOKEN absent."
             echo "Déploiement ignoré. L'artefact bastion-webgl reste téléchargeable."
             echo "Marche à suivre : CI_CD_SETUP.md, section Vercel."
             exit 0
           fi
+
+          # Lie le dossier au projet nommé tower-defense, et le crée s'il n'existe
+          # pas encore. Le jeton est donc le seul secret nécessaire.
+          npx --yes vercel@latest link --yes --project tower-defense \
+            --cwd Builds/WebGL --token "$VERCEL_TOKEN"
 
           # Aucun en-tête Content-Encoding n'est posé sur les fichiers .br, et c'est
           # délibéré. Le build active decompressionFallback : c'est le décompresseur
@@ -103,8 +108,8 @@ jobs:
           # ferait décompresser en amont, et le décompresseur d'Unity recevrait des
           # données déjà en clair qu'il ne saurait pas relire. Ne pas « corriger »
           # cela en ajoutant un vercel.json d'en-têtes.
-          npx --yes vercel@latest deploy Builds/WebGL \
-            --prod --yes --token "$VERCEL_TOKEN" | tee sortie-vercel.txt
+          npx --yes vercel@latest deploy --prod --yes \
+            --cwd Builds/WebGL --token "$VERCEL_TOKEN" | tee sortie-vercel.txt
 
           url=$(grep -oE 'https://[A-Za-z0-9._-]+\.vercel\.app' sortie-vercel.txt | tail -n1)
           if [ -z "$url" ]; then

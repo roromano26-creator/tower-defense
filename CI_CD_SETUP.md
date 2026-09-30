@@ -75,17 +75,17 @@ cela Vercel redéploiera de son côté à chaque push, en écrasant le vrai buil
 sa propre tentative ratée. Le projet garde son identifiant, et seul le workflow
 y déposera désormais quelque chose.
 
-**4. Relever les trois valeurs** et les déclarer en secrets GitHub, comme à
-l'étape 1 :
+**4. Créer le jeton** et le déclarer en secret GitHub, comme à l'étape 1 :
 
 | Secret | Où le trouver |
 |---|---|
 | `VERCEL_TOKEN` | https://vercel.com/account/tokens, bouton *Create Token* |
-| `VERCEL_ORG_ID` | *Settings* du compte ou de l'équipe, champ *ID* |
-| `VERCEL_PROJECT_ID` | le projet → *Settings* → *General* → *Project ID* |
 
-Les trois sont requis. S'il en manque un, le workflow le nomme et s'arrête
-proprement sans déployer.
+Un seul secret suffit. Le workflow lie le dossier au projet **par son nom**,
+`tower-defense`, et le crée s'il n'existe pas encore. `VERCEL_ORG_ID` et
+`VERCEL_PROJECT_ID` ne servent plus : recopiés à la main depuis deux pages
+différentes, une seule valeur erronée suffisait à produire « Project not found »
+sans jamais dire laquelle des deux était en cause.
 
 **5. Relancer le workflow WebGL.** L'adresse s'affiche dans le résumé de
 l'exécution, et dans le journal de l'étape de déploiement.
