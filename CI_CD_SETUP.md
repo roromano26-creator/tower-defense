@@ -54,12 +54,20 @@ groupe de concurrence : ils se suivent au lieu de se disputer le siège.
 
 ---
 
-## Étape 2 — La mise en ligne, déjà faite
+## Étape 2 — Activer GitHub Pages, une fois
 
-Rien à configurer. Le workflow publie le jeu sur **GitHub Pages** à chaque
-construction : hébergement GitHub, depuis ce dépôt, sans compte tiers, sans
-jeton ni identifiant à recopier. Pages est activé automatiquement au premier
-passage, il n'y a donc rien à cocher dans les réglages.
+Le workflow publie le jeu sur **GitHub Pages** à chaque construction :
+hébergement GitHub, depuis ce dépôt, sans compte tiers, sans jeton ni
+identifiant à recopier.
+
+Une seule manipulation est nécessaire, et une seule fois. Dans *Settings* →
+*Pages*, sous **Build and deployment**, réglez **Source** sur **GitHub
+Actions**.
+
+Ce n'est pas automatisable : le jeton dont dispose un workflow n'a pas le droit
+de créer le site Pages, et répond `Resource not accessible by integration`. Tant
+que ce réglage n'est pas fait, l'étape de déploiement échoue sur ce message,
+alors que la construction, elle, a réussi.
 
 L'adresse s'affiche dans le résumé de l'exécution, et reste ensuite visible dans
 *Settings* → *Pages*.
