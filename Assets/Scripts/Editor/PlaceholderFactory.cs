@@ -43,6 +43,28 @@ namespace Bastion.EditorTools
             var go = new GameObject(name); go.transform.SetParent(parent, false); go.transform.localPosition = pos; return go.transform;
         }
 
+        /// <summary>
+        /// Ajoute le liseré à toutes les pièces d'un visuel, en second matériau du même
+        /// renderer : Unity redessine alors le maillage une fois de plus avec lui.
+        ///
+        /// Réservé aux tours et aux ennemis. Appliqué aux dalles, il recréerait exactement
+        /// la grille noire qu'on vient de supprimer du plateau. Les effets additifs en sont
+        /// exclus aussi : un halo n'a pas de contour, et lui en donner un le transformerait
+        /// en disque noir.
+        /// </summary>
+        private static void AjouterContour(GameObject root)
+        {
+            var contour = MaterialLibrary.Contour();
+            if (contour == null) return;           // shader absent : on renonce au liseré, pas au visuel
+
+            foreach (var r in root.GetComponentsInChildren<MeshRenderer>())
+            {
+                if (r.sharedMaterial == null) continue;
+                if (r.sharedMaterial.shader != null && r.sharedMaterial.shader.name.Contains("Particles")) continue;
+                r.sharedMaterials = new[] { r.sharedMaterial, contour };
+            }
+        }
+
         private static void NoShadows(GameObject go) { foreach (var r in go.GetComponentsInChildren<Renderer>()) r.shadowCastingMode = ShadowCastingMode.Off; }
 
         // ---------- tours (3 niveaux chacune) ----------
@@ -72,6 +94,7 @@ namespace Bastion.EditorTools
             // la géométrie.
             t.localScale = new Vector3(0.92f, 1.3f, 0.92f);
 
+            AjouterContour(root);
             return BastionPaths.SavePrefab(root, path);
         }
 
@@ -261,6 +284,7 @@ namespace Bastion.EditorTools
                     MeshPart(t, "Aura", MeshLibrary.Ring(0.7f), MaterialLibrary.Additive("AuraBoss", "#FF3A3A"), new Vector3(0, 0.05f, 0), new Vector3(2.6f, 1, 2.6f));
                     break;
             }
+            AjouterContour(root);
             return BastionPaths.SavePrefab(root, path);
         }
 

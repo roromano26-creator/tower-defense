@@ -15,6 +15,29 @@ namespace Bastion.EditorTools
         private static readonly int Metallic = Shader.PropertyToID("_Metallic");
         private static readonly int Emission = Shader.PropertyToID("_EmissionColor");
 
+        /// <summary>
+        /// Matériau de contour, ou null si le shader est introuvable. Le null est voulu et
+        /// doit être testé par l'appelant : construire un Material sur un shader nul donne
+        /// du magenta sur tout l'objet. Perdre le liseré est acceptable, repeindre le jeu
+        /// en rose ne l'est pas.
+        /// </summary>
+        public static Material Contour()
+        {
+            var shader = Shader.Find("Bastion/Contour");
+            if (shader == null)
+            {
+                Debug.LogWarning("[Contour] Shader « Bastion/Contour » introuvable : liseré désactivé.");
+                return null;
+            }
+            return BastionPaths.GetOrCreate($"{BastionPaths.Materials}/M_Contour.mat", () =>
+            {
+                var m = new Material(shader) { name = "M_Contour" };
+                m.SetColor("_CouleurContour", Hex("#0C0C14"));
+                m.SetFloat("_Epaisseur", 0.025f);
+                return m;
+            });
+        }
+
         public static Material Lit(string name, string hex, float smooth = 0.35f, string emissiveHex = null, float emissive = 0f)
         {
             return BastionPaths.GetOrCreate($"{BastionPaths.Materials}/M_{name}.mat", () =>
