@@ -63,6 +63,15 @@ namespace Bastion.EditorTools
                 default: h = Arcane(t, level); break;
             }
             Node(t, "FirePoint", new Vector3(0, h, 0));
+
+            // Étirement vertical appliqué à la racine, pour les cinq tours d'un coup.
+            // Vues de haut à la distance de jeu, aucune des pièces de détail n'est
+            // lisible : ce qui parle est la silhouette, et des volumes trapus lisaient
+            // comme des tabourets posés sur le damier. Les facteurs X et Z restent
+            // égaux, sans quoi la rotation de la tourelle autour de Y cisaillerait
+            // la géométrie.
+            t.localScale = new Vector3(0.92f, 1.3f, 0.92f);
+
             return BastionPaths.SavePrefab(root, path);
         }
 
@@ -81,7 +90,9 @@ namespace Bastion.EditorTools
                 Part(t, $"Post{i}", PrimitiveType.Cube, MaterialLibrary.Wood, new Vector3(Mathf.Cos(a) * 0.65f, top / 2f, Mathf.Sin(a) * 0.65f), new Vector3(0.18f, top, 0.18f));
             }
             var turret = Node(t, "Turret", new Vector3(0, top + 0.15f, 0));
-            Part(turret, "Deck", PrimitiveType.Cylinder, MaterialLibrary.Orange, Vector3.zero, new Vector3(1.3f, 0.06f, 1.3f));
+            // 1.3 sur une case de 2 m : vue du dessus, ce disque orange occupait les deux
+            // tiers de la case et devenait la tour tout entière à l'œil du joueur.
+            Part(turret, "Deck", PrimitiveType.Cylinder, MaterialLibrary.Orange, Vector3.zero, new Vector3(0.95f, 0.06f, 0.95f));
             int bows = 1 + L;                          // une arbalète de plus par niveau, comme sur la planche de référence
             for (int i = 0; i < bows; i++)
             {
