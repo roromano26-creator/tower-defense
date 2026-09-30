@@ -9,8 +9,8 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: siege-unity-${{ github.ref }}
-  cancel-in-progress: false
+  group: webgl-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-webgl:

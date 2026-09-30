@@ -9,8 +9,8 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: siege-unity-${{ github.ref }}
-  cancel-in-progress: false
+  group: apk-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-apk:
