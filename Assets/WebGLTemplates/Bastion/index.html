@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport-fit=cover : le jeu occupe aussi la zone sous l'encoche des téléphones.
+       user-scalable=no : sans cela un double appui zoome la page au lieu de jouer. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0D0D1A">
+  <title>{{{ PRODUCT_NAME }}}</title>
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; background: #0D0D1A; overflow: hidden; }
+    /* Le canevas occupe toute la fenêtre. Le gabarit par défaut le cadrait à une taille
+       fixe, d'où les bandes noires autour du jeu et la barre de marque en dessous. */
+    #zone { position: fixed; inset: 0; }
+    #unity-canvas { width: 100%; height: 100%; display: block; background: #0D0D1A; }
+    #chargement {
+      position: fixed; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 18px;
+      color: #EAF2FB; background: #0D0D1A;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    #chargement span { font-size: 15px; letter-spacing: .04em; opacity: .75; }
+    #jauge { width: 190px; height: 4px; border-radius: 2px; background: rgba(255,255,255,.14); overflow: hidden; }
+    #jauge i { display: block; height: 100%; width: 0; background: #3DDC84; transition: width .15s linear; }
+  </style>
+</head>
+<body>
+  <div id="zone"><canvas id="unity-canvas" tabindex="-1"></canvas></div>
+  <div id="chargement"><span>Chargement…</span><div id="jauge"><i></i></div></div>
+
+  <script src="Build/{{{ LOADER_FILENAME }}}"></script>
+  <script>
+    var ecran = document.querySelector("#chargement");
+    var barre = document.querySelector("#jauge i");
+
+    createUnityInstance(
+      document.querySelector("#unity-canvas"),
+      {
+        dataUrl: "Build/{{{ DATA_FILENAME }}}",
+        frameworkUrl: "Build/{{{ FRAMEWORK_FILENAME }}}",
+        codeUrl: "Build/{{{ CODE_FILENAME }}}",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "{{{ COMPANY_NAME }}}",
+        productName: "{{{ PRODUCT_NAME }}}",
+        productVersion: "{{{ PRODUCT_VERSION }}}"
+      },
+      function (avancement) { barre.style.width = Math.round(avancement * 100) + "%"; }
+    ).then(function () {
+      ecran.style.display = "none";
+    }).catch(function (erreur) {
+      ecran.innerHTML = "<span>Le jeu n'a pas pu démarrer.</span>";
+      console.error(erreur);
+    });
+  </script>
+</body>
+</html>

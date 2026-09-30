@@ -36,6 +36,11 @@ namespace Bastion.EditorTools
             // hébergements ne posent pas ; sans eux la page refuse de se charger.
             PlayerSettings.WebGL.threadsSupport = false;
 
+            // Gabarit maison : le gabarit par défaut cadre le jeu à taille fixe, laisse des
+            // bandes noires autour et affiche une barre de marque en dessous, ce qui donne
+            // l'air d'un projet non terminé. Le nôtre occupe toute la fenêtre.
+            PlayerSettings.WebGL.template = "PROJECT:Bastion";
+
             PlayerSettings.colorSpace = ColorSpace.Linear;
             PlayerSettings.gpuSkinning = true;
             PlayerSettings.graphicsJobs = false;
