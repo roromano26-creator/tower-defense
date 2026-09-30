@@ -19,6 +19,11 @@ namespace Bastion.EditorTools
                 EditorUtility.DisplayProgressBar("Bastion", "Dossiers…", 0.05f);
                 BastionPaths.EnsureAll();
 
+                // Avant toute création de texte : sans ces ressources, les composants
+                // TextMeshPro se créent sans erreur mais n'affichent rien.
+                EditorUtility.DisplayProgressBar("Bastion", "Ressources TextMeshPro…", 0.1f);
+                TextMeshProResources.EnsureImported();
+
                 EditorUtility.DisplayProgressBar("Bastion", "URP + post-process…", 0.15f);
                 URPSetup.Apply();
                 var post = URPSetup.PostProcessProfile();
