@@ -25,16 +25,16 @@ namespace Bastion.CameraRig
         private bool dragging;
         private float shake;
         private Vector3 shakeOffset;
+        private float zoomMaxEffectif;
+        private int largeurEcran, hauteurEcran;
 
         public bool IsDragging => dragging;
 
         private void Start()
         {
-            var b = GridManager.Instance.WorldBounds;
-            targetPivot = b.center;
-            targetZoom = Mathf.Clamp(Mathf.Max(b.size.x, b.size.z) * 0.85f, zoomMin, zoomMax);
+            targetPivot = GridManager.Instance.WorldBounds.center;
+            Recadrer(true);
             transform.position = targetPivot;
-            ApplyZoom(targetZoom, true);
         }
 
         private void OnEnable() { GameEvents.OnCameraShakeRequested += Shake; }
@@ -42,8 +42,37 @@ namespace Bastion.CameraRig
 
         private void Shake(Vector3 _, float strength) => shake = Mathf.Max(shake, strength);
 
+        /// <summary>
+        /// Calcule la distance nécessaire pour que tout le plateau tienne à l'écran, format
+        /// compris. L'ancien calcul ne regardait que la taille du plateau : correct en
+        /// paysage, il ne montrait que trois colonnes sur quatorze en portrait, le champ
+        /// horizontal y étant deux fois plus étroit. Le plafond de zoom, fixé à 26, empêchait
+        /// en plus de reculer assez pour compenser, d'où un plateau impossible à embrasser.
+        /// </summary>
+        private void Recadrer(bool immediat)
+        {
+            largeurEcran = Screen.width; hauteurEcran = Screen.height;
+            var b = GridManager.Instance.WorldBounds;
+
+            // Le garde-fou évite une distance qui explose sur un format extrême.
+            float format = Mathf.Max(0.35f, (float)Screen.width / Mathf.Max(1, Screen.height));
+            float pourLargeur = b.size.x / format;
+            float voulu = Mathf.Max(pourLargeur, b.size.z) * 0.85f;
+
+            // Le plafond s'adapte au besoin réel : sinon il interdirait le seul cadrage
+            // qui rende le jeu jouable en portrait.
+            zoomMaxEffectif = Mathf.Max(zoomMax, voulu);
+            targetZoom = Mathf.Clamp(voulu, zoomMin, zoomMaxEffectif);
+            if (immediat) ApplyZoom(targetZoom, true);
+        }
+
         private void Update()
         {
+            // La rotation d'un téléphone, ou le redimensionnement d'une fenêtre, change le
+            // format sans prévenir : sur le web rien n'impose l'orientation, contrairement
+            // à l'application Android.
+            if (Screen.width != largeurEcran || Screen.height != hauteurEcran) Recadrer(false);
+
             HandleTouch();
             HandleMouse();
             ClampToBounds();
@@ -79,7 +108,7 @@ namespace Bastion.CameraRig
                 var a = Input.GetTouch(0); var b = Input.GetTouch(1);
                 float prev = ((a.position - a.deltaPosition) - (b.position - b.deltaPosition)).magnitude;
                 float now = (a.position - b.position).magnitude;
-                targetZoom = Mathf.Clamp(targetZoom - (now - prev) * zoomSpeed, zoomMin, zoomMax);
+                targetZoom = Mathf.Clamp(targetZoom - (now - prev) * zoomSpeed, zoomMin, zoomMaxEffectif);
             }
         }
 
@@ -90,7 +119,7 @@ namespace Bastion.CameraRig
             if (Input.GetMouseButton(1)) { Pan(Input.mousePosition - lastPointer); lastPointer = Input.mousePosition; dragging = true; }
             if (Input.GetMouseButtonUp(1)) Invoke(nameof(ClearDrag), 0.05f);
             float scroll = Input.mouseScrollDelta.y;
-            if (Mathf.Abs(scroll) > 0.01f) targetZoom = Mathf.Clamp(targetZoom - scroll * 1.5f, zoomMin, zoomMax);
+            if (Mathf.Abs(scroll) > 0.01f) targetZoom = Mathf.Clamp(targetZoom - scroll * 1.5f, zoomMin, zoomMaxEffectif);
         }
 
         private void ClearDrag() => dragging = false;
