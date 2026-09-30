@@ -25,7 +25,11 @@ namespace Bastion.Grid
         public Color blockedColor = new(0.23f, 0.23f, 0.28f);
         public Color sunColor = new(1f, 0.95f, 0.84f);
         public Color ambientSky = new(0.36f, 0.42f, 0.62f);
-        public Color ambientGround = new(0.09f, 0.09f, 0.12f);
+        // Remontée depuis un quasi-noir. En ambiance trois tons, cette couleur éclaire le
+        // DESSOUS des objets : à 0.09 les formes basses se fondaient dans le sol et le
+        // plateau lisait comme une maquette mal éclairée. Un rebond visible détache les
+        // volumes, ce dont un rendu low-poly dépend entièrement faute de texture.
+        public Color ambientGround = new(0.20f, 0.21f, 0.27f);
         public Color fogColor = new(0.07f, 0.07f, 0.1f);
         [Tooltip("Matériaux de dalle optionnels (assets importés) ; sinon la couleur du biome teinte les dalles générées.")]
         public Material buildableMaterial, pathMaterial, blockedMaterial;

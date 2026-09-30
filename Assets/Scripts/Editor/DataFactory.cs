@@ -219,7 +219,7 @@ namespace Bastion.EditorTools
                 l.startingGold = 220; l.startingLives = 20; l.waveClearBonus = 35; l.waves = waves; l.autoStartDelay = 25f; l.bossEvery = 5;
                 l.healthScalingPerWave = 0.14f;
                 l.buildableColor = MaterialLibrary.Hex("#4A6B8A"); l.pathColor = MaterialLibrary.Hex("#E8F0F8"); l.blockedColor = MaterialLibrary.Hex("#2E3A4A");
-                l.sunColor = MaterialLibrary.Hex("#DCEBFF"); l.ambientSky = MaterialLibrary.Hex("#6F8FC4"); l.ambientGround = MaterialLibrary.Hex("#101620"); l.fogColor = MaterialLibrary.Hex("#0E1520");
+                l.sunColor = MaterialLibrary.Hex("#DCEBFF"); l.ambientSky = MaterialLibrary.Hex("#6F8FC4"); l.ambientGround = MaterialLibrary.Hex("#2A3444"); l.fogColor = MaterialLibrary.Hex("#0E1520");
                 l.endlessPool = new[] { E("goblin"), E("ogre"), E("bat"), E("frostgolem") };
                 l.endlessBossPool = new[] { E("warlord"), E("icewyrm") };
                 l.endlessBudgetBase = 40; l.endlessBudgetGrowth = 8;
@@ -252,7 +252,7 @@ namespace Bastion.EditorTools
                 l.startingGold = 260; l.startingLives = 20; l.waveClearBonus = 40; l.waves = waves; l.autoStartDelay = 25f; l.bossEvery = 6;
                 l.healthScalingPerWave = 0.15f;
                 l.buildableColor = MaterialLibrary.Hex("#3A2E33"); l.pathColor = MaterialLibrary.Hex("#7A4A2E"); l.blockedColor = MaterialLibrary.Hex("#1E1418");
-                l.sunColor = MaterialLibrary.Hex("#FFD2A8"); l.ambientSky = MaterialLibrary.Hex("#7A4A3A"); l.ambientGround = MaterialLibrary.Hex("#1A0E0A"); l.fogColor = MaterialLibrary.Hex("#160C0A");
+                l.sunColor = MaterialLibrary.Hex("#FFD2A8"); l.ambientSky = MaterialLibrary.Hex("#7A4A3A"); l.ambientGround = MaterialLibrary.Hex("#3A2318"); l.fogColor = MaterialLibrary.Hex("#160C0A");
                 l.endlessPool = new[] { E("goblin"), E("ogre"), E("bat"), E("frostgolem") };
                 l.endlessBossPool = new[] { E("warlord"), E("icewyrm") };
                 l.endlessBudgetBase = 50; l.endlessBudgetGrowth = 10;

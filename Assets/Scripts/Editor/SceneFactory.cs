@@ -30,9 +30,12 @@ namespace Bastion.EditorTools
             RenderSettings.ambientMode = AmbientMode.Trilight;
             RenderSettings.ambientSkyColor = MaterialLibrary.Hex("#5B6C9E");
             RenderSettings.ambientEquatorColor = MaterialLibrary.Hex("#3A3F5C");
-            RenderSettings.ambientGroundColor = MaterialLibrary.Hex("#16161F");
+            RenderSettings.ambientGroundColor = MaterialLibrary.Hex("#333645");
             RenderSettings.fog = true; RenderSettings.fogMode = FogMode.Linear; RenderSettings.fogColor = MaterialLibrary.Hex("#11111A");
-            RenderSettings.fogStartDistance = 34f; RenderSettings.fogEndDistance = 70f;
+            // Le plateau fait 28 m sur 20, soit 34 m de diagonale : un brouillard démarrant
+            // à 34 m mordait sur son fond et le noyait en quasi-noir. Repoussé au-delà,
+            // il encadre la scène au lieu d'en effacer la moitié.
+            RenderSettings.fogStartDistance = 48f; RenderSettings.fogEndDistance = 100f;
             RenderSettings.skybox = null;
 
             // --- Caméra + post-process ---
