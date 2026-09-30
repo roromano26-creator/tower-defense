@@ -147,6 +147,11 @@ serveur statique local.
   écrit « Build succeeded » sans point d'exclamation, ce qui ne correspond pas.
   Sans ce marqueur, une construction parfaitement réussie est rapportée en échec,
   et l'APK produit n'est jamais archivé.
+- **Le client Vercel a besoin de ses propres dossiers de travail.** Le conteneur
+  Unity, qui tourne en root, laisse sous `/home/runner` des dossiers lui
+  appartenant. Le client Vercel lancé ensuite ne peut plus créer les siens et
+  meurt sur `EACCES` avant tout déploiement. `XDG_DATA_HOME` et `XDG_CACHE_HOME`
+  le renvoient vers un emplacement accessible.
 - **Le conteneur tourne en root.** Les fichiers produits lui appartiennent ; sans
   un `chown` avant l'archivage, l'étape peut ne pas réussir à les lire.
 - **`androidTargetSdkVersion` est obligatoire ici.** Sans lui, GameCI lit le

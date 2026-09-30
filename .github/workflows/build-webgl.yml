@@ -73,10 +73,18 @@ jobs:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          # Le conteneur Unity tourne en root et laisse sous /home/runner des dossiers
+          # qui lui appartiennent. Le client Vercel, lancé ensuite par l'utilisateur
+          # normal, ne peut alors plus créer les siens et meurt sur EACCES avant
+          # d'avoir rien déployé. On lui en attribue donc ailleurs, dans un
+          # emplacement qui nous appartient à coup sûr.
+          XDG_DATA_HOME: ${{ runner.temp }}/vercel-data
+          XDG_CACHE_HOME: ${{ runner.temp }}/vercel-cache
         run: |
           # pipefail : sans lui, un échec de vercel serait masqué par le tee qui suit
           # et l'étape passerait au vert sans avoir rien déployé.
           set -o pipefail
+          mkdir -p "$XDG_DATA_HOME" "$XDG_CACHE_HOME"
 
           manquants=""
           if [ -z "$VERCEL_TOKEN" ];      then manquants="$manquants VERCEL_TOKEN"; fi
