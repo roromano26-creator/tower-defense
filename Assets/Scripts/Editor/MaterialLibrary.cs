@@ -128,7 +128,9 @@ namespace Bastion.EditorTools
         public static Material GroundBuildable => Lit("GroundBuildable", "#34495E", 0.2f);
         public static Material GroundPath => Lit("GroundPath", "#C7A26A", 0.25f);
         public static Material GroundBlocked => Lit("GroundBlocked", "#3B3B47", 0.3f);
-        public static Material GroundBase => Lit("GroundBase", "#1C1C26", 0.1f);
+        // Relevé depuis un quasi-noir : c'est ce qui apparaît dans les joints entre dalles,
+        // et un fond noir y transformait le dallage en réseau de fissures.
+        public static Material GroundBase => Lit("GroundBase", "#2E3A4A", 0.1f);
         public static Material Ghost => Transparent("Ghost", "#5CFF9A", 0.45f);
         public static Material RangeDisc => Transparent("RangeDisc", "#9FD8FF", 0.22f);
         public static Material CellHighlight => Transparent("CellHighlight", "#FFFFFF", 0.35f);

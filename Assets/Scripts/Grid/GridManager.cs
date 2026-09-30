@@ -40,12 +40,24 @@ namespace Bastion.Grid
             Build();
         }
 
-        private Material tintedBuildable, tintedPath, tintedBlocked;
+        private Material tintedBuildable, tintedBuildableAlt, tintedPath, tintedBlocked;
 
         /// <summary>Un matériau par type de dalle, teinté par le biome du niveau : trois instances, pas une par dalle (SRP Batcher).</summary>
         private void PrepareMaterials()
         {
             tintedBuildable = level.buildableMaterial != null ? level.buildableMaterial : Tint(buildableMaterial, level.buildableColor);
+
+            // Damier : une seconde teinte, à peine plus claire, alternée une case sur deux.
+            // Un plateau d'une seule couleur lit comme une dalle de béton ; l'alternance le
+            // fait lire comme un terrain de jeu, pour le prix d'un matériau de plus — le
+            // SRP Batcher regroupe toujours, il n'y a pas une instance par dalle.
+            var baseC = level.buildableMaterial != null ? level.buildableMaterial.GetColor("_BaseColor") : level.buildableColor;
+            Color.RGBToHSV(baseC, out float h, out float sat, out float v);
+            tintedBuildableAlt = Tint(buildableMaterial != null ? buildableMaterial : level.buildableMaterial,
+                                     Color.HSVToRGB(h, Mathf.Clamp01(sat * 0.92f), Mathf.Clamp01(v * 1.14f)));
+            // Sans matériau source, la teinte alternée serait nulle et les dalles
+            // sortiraient en magenta : on retombe alors sur le damier uni.
+            if (tintedBuildableAlt == null) tintedBuildableAlt = tintedBuildable;
             tintedPath = level.pathMaterial != null ? level.pathMaterial : Tint(pathMaterial, level.pathColor);
             tintedBlocked = level.blockedMaterial != null ? level.blockedMaterial : Tint(blockedMaterial, level.blockedColor);
         }
@@ -100,9 +112,14 @@ namespace Bastion.Grid
                     {
                         tile = GameObject.CreatePrimitive(PrimitiveType.Cube);
                         tile.transform.SetParent(groundRoot, false);
-                        tile.transform.localScale = new Vector3(level.cellSize * 0.96f, type == CellType.Path ? 0.18f : 0.3f, level.cellSize * 0.96f);
+                        // 0.96 laissait 4 % de vide entre dalles, soit 8 cm par case. Sur un
+                        // sol quasi noir, cette grille de joints dominait toute l'image et
+                        // lisait comme des fissures plutôt que comme un dallage.
+                        tile.transform.localScale = new Vector3(level.cellSize * 0.995f, type == CellType.Path ? 0.18f : 0.3f, level.cellSize * 0.995f);
                         var r = tile.GetComponent<Renderer>();
-                        r.sharedMaterial = type == CellType.Path ? tintedPath : type == CellType.Blocked ? tintedBlocked : tintedBuildable;
+                        r.sharedMaterial = type == CellType.Path ? tintedPath
+                                         : type == CellType.Blocked ? tintedBlocked
+                                         : ((x + y) % 2 == 0 ? tintedBuildable : tintedBuildableAlt);
                         r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
                     }
                     tile.name = $"Tile_{x}_{y}_{type}";

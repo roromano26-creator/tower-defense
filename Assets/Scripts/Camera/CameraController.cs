@@ -56,8 +56,14 @@ namespace Bastion.CameraRig
 
             // Le garde-fou évite une distance qui explose sur un format extrême.
             float format = Mathf.Max(0.35f, (float)Screen.width / Mathf.Max(1, Screen.height));
-            float pourLargeur = b.size.x / format;
-            float voulu = Mathf.Max(pourLargeur, b.size.z) * 0.85f;
+
+            // Le cadrage d'origine sert de plancher : il était réglé en paysage et correct.
+            // Diviser la largeur par le format y donnait une valeur PLUS PETITE, donc une
+            // caméra plus proche qu'avant — une régression sur le cas qui marchait. On ne
+            // fait donc que reculer, et seulement quand le format l'exige.
+            float origine = Mathf.Max(b.size.x, b.size.z) * 0.85f;
+            float pourLargeur = (b.size.x / format) * 0.85f;
+            float voulu = Mathf.Max(origine, pourLargeur);
 
             // Le plafond s'adapte au besoin réel : sinon il interdirait le seul cadrage
             // qui rende le jeu jouable en portrait.
