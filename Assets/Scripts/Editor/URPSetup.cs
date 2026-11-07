@@ -6,7 +6,7 @@ using UnityEngine.Rendering.Universal;
 namespace Bastion.EditorTools
 {
     /// <summary>
-    /// URP configuré pour mobile milieu de gamme : SRP Batcher, 1 cascade d'ombres à 30 m, MSAA 2x,
+    /// URP configuré pour mobile milieu de gamme : SRP Batcher, 2 cascades d'ombres à 70 m, MSAA 2x,
     /// HDR pour le bloom, pas de textures de profondeur/opaque (personne ne les lit), post-process
     /// léger : Bloom, Color Adjustments, Vignette. Tout est dans Assets/Settings/URP.
     /// </summary>
@@ -61,8 +61,19 @@ namespace Bastion.EditorTools
             asset.supportsCameraOpaqueTexture = false;
             asset.useSRPBatcher = true;
             asset.supportsDynamicBatching = false;             // le SRP Batcher fait mieux, et le dynamic batching casse l'instancing
-            asset.shadowDistance = 30f;
-            asset.shadowCascadeCount = 1;
+            // La distance d'ombres se mesure depuis la caméra, pas depuis le plateau, et
+            // 30 m ne suffisaient pas : la caméra se tient à 23,8 m du centre en paysage,
+            // donc le bord éloigné du plateau est à près de 38 m et n'avait aucune ombre
+            // du tout. C'est la moitié du damier qui se lisait plate, pour un réglage
+            // qui semblait pourtant large. En portrait, où le cadrage recule jusqu'à
+            // 52 m, plus rien n'était ombré.
+            //
+            // Deux cascades plutôt qu'une : à 70 m, une seule cascade étalerait la même
+            // shadow map sur plus du double de surface et rendrait chaque ombre floue de
+            // près, là précisément où le joueur regarde. Deux cascades gardent le champ
+            // proche net et dégradent le lointain, qui peut l'être.
+            asset.shadowDistance = 70f;
+            asset.shadowCascadeCount = 2;
             asset.mainLightShadowmapResolution = 2048;
             ReglerEclairage(asset);   // aucune lumière additionnelle : émission + bloom suffisent
             asset.shadowDepthBias = 1f; asset.shadowNormalBias = 1f;

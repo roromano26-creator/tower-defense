@@ -44,10 +44,10 @@ namespace Bastion.EditorTools
                 var m = new Material(shader) { name = "M_Contour" };
                 m.SetColor("_CouleurContour", Hex("#0C0C14"));
                 // 4,5 cm sur une case de 2 m ne faisaient guère plus d'un pixel à la
-                // distance de jeu : trop fin pour se voir, donc impossible à distinguer
-                // d'un liseré qui ne s'affiche pas du tout. On épaissit assez pour que la
-                // question soit tranchée à l'œil.
-                m.SetFloat("_Epaisseur", 0.09f);
+                // distance de jeu : invisible, donc impossible à distinguer d'un liseré
+                // qui ne s'affiche pas du tout. 9 cm ont tranché la question, mais
+                // appuyaient trop le trait ; 6 cm se lisent sans caricaturer.
+                m.SetFloat("_Epaisseur", 0.06f);
                 return m;
             });
         }
@@ -71,14 +71,20 @@ namespace Bastion.EditorTools
             });
         }
 
-        /// <summary>Transparent non éclairé (fantôme de placement, disque de portée).</summary>
-        public static Material Transparent(string name, string hex, float alpha)
+        /// <summary>
+        /// Transparent non éclairé (fantôme de placement, disque de portée, flaque d'ombre).
+        /// La texture est multipliée par la couleur : une pastille blanche à alpha dégressif
+        /// suffit donc à donner un bord doux à un disque de n'importe quelle teinte, sans
+        /// un shader de plus.
+        /// </summary>
+        public static Material Transparent(string name, string hex, float alpha, Texture2D tex = null)
         {
             return BastionPaths.GetOrCreate($"{BastionPaths.Materials}/M_{name}.mat", () =>
             {
                 var m = new Material(Shader.Find("Universal Render Pipeline/Unlit")) { name = $"M_{name}" };
                 var c = Hex(hex); c.a = alpha;
                 m.SetColor(BaseColor, c);
+                if (tex != null) m.SetTexture("_BaseMap", tex);
                 SetupTransparent(m, additive: false);
                 return m;
             });
@@ -155,6 +161,15 @@ namespace Bastion.EditorTools
         public static Material Lava => Lit("Lava", "#FF5A1F", 0.5f, "#FF7A1F", 3.5f);
         public static Material RedDark => Lit("RedDark", "#7E2828", 0.35f);
         public static Material Purple => Lit("Purple", "#6E43D6", 0.45f);
+        // Socles de tour : une teinte par type, pour qu'on reconnaisse une tour à sa
+        // base sans lire sa silhouette. Vue de haut à la distance de jeu, le socle est
+        // la pièce la plus large et la seule qui ne soit jamais masquée par la tourelle.
+        // Le canon portait du violet, comme la tour arcanique : deux tours sur cinq
+        // avaient la même couleur, et le violet dit « magie », pas « poudre ».
+        public static Material Rust => Lit("Rust", "#B4502A", 0.4f);
+        // Le socle de la tour de glace était en pierre sombre, indistinguable du damier.
+        // Non émissif, contrairement à Ice : un anneau entier qui bloome mangerait la tour.
+        public static Material IceDeep => Lit("IceDeep", "#3E7FA8", 0.5f);
         public static Material ArcaneCrystal => Lit("ArcaneCrystal", "#F0A5FF", 0.8f, "#D46CFF", 3f);
         public static Material Toxic => Lit("Toxic", "#8CFF3A", 0.6f, "#7CFF1A", 2.5f);
         public static Material Green => Lit("Green", "#6CC24A", 0.35f);
@@ -171,6 +186,14 @@ namespace Bastion.EditorTools
         public static Material Ghost => Transparent("Ghost", "#5CFF9A", 0.45f);
         public static Material RangeDisc => Transparent("RangeDisc", "#9FD8FF", 0.22f);
         public static Material CellHighlight => Transparent("CellHighlight", "#FFFFFF", 0.35f);
+        /// <summary>
+        /// Flaque d'ombre posée au pied d'une tour. Elle ne remplace pas l'ombre du
+        /// soleil : elle la complète au point de contact, que le biais de la shadow map
+        /// décolle toujours un peu. C'est ce contact qui fait qu'une tour est posée sur
+        /// le damier au lieu d'y flotter, et son absence est la première chose qui
+        /// trahit un assemblage de primitives.
+        /// </summary>
+        public static Material OmbreContact => Transparent("OmbreContact", "#0A0E18", 0.5f, SoftCircle());
         public static Material HealthBack => Transparent("HealthBack", "#000000", 0.6f);
         public static Material HealthFill => Transparent("HealthFill", "#3DDC84", 1f);
         public static Material ParticleAdd => Additive("ParticleAdd", "#FFFFFF", SoftCircle());

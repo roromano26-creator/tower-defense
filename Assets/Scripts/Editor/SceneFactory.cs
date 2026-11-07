@@ -35,6 +35,11 @@ namespace Bastion.EditorTools
             // Le plateau fait 28 m sur 20, soit 34 m de diagonale : un brouillard démarrant
             // à 34 m mordait sur son fond et le noyait en quasi-noir. Repoussé au-delà,
             // il encadre la scène au lieu d'en effacer la moitié.
+            //
+            // Ces deux valeurs ne sont plus qu'un état initial : LevelEnvironment les
+            // recalcule à chaque image depuis le recul réel de la caméra, qui va du
+            // simple au double entre paysage et portrait. Les garder ici fixes rendait
+            // le jeu crépusculaire sur un téléphone tenu debout.
             RenderSettings.fogStartDistance = 48f; RenderSettings.fogEndDistance = 100f;
             RenderSettings.skybox = null;
 

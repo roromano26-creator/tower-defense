@@ -62,6 +62,10 @@ namespace Bastion.EditorTools
             {
                 if (r.sharedMaterial == null) continue;
                 if (r.sharedMaterial.shader != null && r.sharedMaterial.shader.name.Contains("Particles")) continue;
+                // Une pièce transparente n'a pas de silhouette à cerner : l'auréoler
+                // reviendrait à dessiner un anneau noir franc autour d'un halo ou d'une
+                // flaque d'ombre, c'est-à-dire exactement le contraire de l'effet voulu.
+                if (r.sharedMaterial.renderQueue >= (int)UnityEngine.Rendering.RenderQueue.Transparent) continue;
                 r.sharedMaterials = new[] { r.sharedMaterial, contour };
                 decorees++;
             }
@@ -69,6 +73,54 @@ namespace Bastion.EditorTools
             // d'une application qui n'a jamais eu lieu. Le compte tranche entre les deux
             // sans avoir à relancer le jeu pour regarder.
             Diagnostic.Noter($"[Contour] {root.name} : {decorees} pièces décorées.");
+        }
+
+        /// <summary>
+        /// Pose une flaque d'ombre sous une tour, à l'emprise réelle de ses pièces.
+        ///
+        /// Réservé aux tours, et volontairement. Un ennemi volant porte sa hauteur sur
+        /// son propre transform : une flaque enfant le suivrait en l'air et se lirait
+        /// comme un disque noir volant sous une chauve-souris. Les ennemis au sol
+        /// gardent donc l'ombre du soleil, qui leur suffit — ce sont les tours, immobiles
+        /// et nombreuses, qui avaient l'air posées sur rien.
+        ///
+        /// hauteurSol : le dessus de la dalle constructible. Une dalle est un cube de
+        /// 0,3 de haut centré sur zéro, son dessus est donc à 0,15 — une flaque posée
+        /// plus bas serait tout simplement à l'intérieur de la dalle, invisible.
+        /// </summary>
+        private static void AjouterOmbreContact(GameObject root, float hauteurSol = 0.17f)
+        {
+            // L'emprise est mesurée, pas choisie : les socles vont de 1,4 à 1,85 de large
+            // selon la tour, et une flaque trop grande déborderait sur la case voisine
+            // tandis qu'une trop petite disparaîtrait sous le socle.
+            //
+            // Seules les pièces qui touchent le sol comptent : une ombre de contact suit
+            // l'empreinte, pas la silhouette. Mesurer tout l'objet donnait 2,06 m sous
+            // l'arbalète de niveau 3, dont les bras dépassent largement du socle — la
+            // flaque mordait alors sur les deux cases voisines.
+            var b = new Bounds();
+            bool premiere = true;
+            foreach (var r in root.GetComponentsInChildren<MeshRenderer>())
+            {
+                if (r.bounds.min.y > 0.35f) continue;
+                if (premiere) { b = r.bounds; premiere = false; } else b.Encapsulate(r.bounds);
+            }
+            if (premiere) return;
+
+            // Plafond de sécurité : une case fait 2 m, et une flaque qui la dépasse se
+            // mélange à celle de la tour d'à côté en une tache continue.
+            float largeur = Mathf.Min(Mathf.Max(b.size.x, b.size.z) * 1.1f, 1.9f);
+
+            // Les bornes sont en monde et contiennent déjà l'échelle de la racine ; la
+            // division la retire, sans quoi l'étirement vertical de 1,3 écraserait la
+            // hauteur de pose et l'étranglement de 0,92 rétrécirait la flaque deux fois.
+            var e = root.transform.localScale;
+            var quad = Part(root.transform, "OmbreContact", PrimitiveType.Quad, MaterialLibrary.OmbreContact,
+                new Vector3(0f, hauteurSol / Mathf.Max(0.001f, e.y), 0f),
+                new Vector3(largeur / Mathf.Max(0.001f, e.x), largeur / Mathf.Max(0.001f, e.z), 1f),
+                new Vector3(90f, 0f, 0f));
+            quad.GetComponent<MeshRenderer>().shadowCastingMode = ShadowCastingMode.Off;
+            Diagnostic.Noter($"[Ombre] {root.name} : flaque de {largeur:0.00} m.");
         }
 
         private static void NoShadows(GameObject go) { foreach (var r in go.GetComponentsInChildren<Renderer>()) r.shadowCastingMode = ShadowCastingMode.Off; }
@@ -101,6 +153,9 @@ namespace Bastion.EditorTools
             t.localScale = new Vector3(0.92f, 1.3f, 0.92f);
 
             AjouterContour(root);
+            // Après le liseré : la flaque ne doit ni en recevoir un, ni entrer dans le
+            // calcul de l'emprise qu'elle sert elle-même à couvrir.
+            AjouterOmbreContact(root);
             return BastionPaths.SavePrefab(root, path);
         }
 
@@ -138,7 +193,7 @@ namespace Bastion.EditorTools
 
         private static float Cannon(Transform t, int L)
         {
-            Part(t, "Base", PrimitiveType.Cylinder, MaterialLibrary.Purple, new Vector3(0, 0.08f, 0), new Vector3(1.7f, 0.08f, 1.7f));
+            Part(t, "Base", PrimitiveType.Cylinder, MaterialLibrary.Rust, new Vector3(0, 0.08f, 0), new Vector3(1.7f, 0.08f, 1.7f));
             float top = 0.16f;
             for (int i = 0; i <= L; i++)
             {
@@ -163,7 +218,7 @@ namespace Bastion.EditorTools
 
         private static float Frost(Transform t, int L)
         {
-            Part(t, "Base", PrimitiveType.Cylinder, MaterialLibrary.StoneDark, new Vector3(0, 0.06f, 0), new Vector3(1.7f, 0.06f, 1.7f));
+            Part(t, "Base", PrimitiveType.Cylinder, MaterialLibrary.IceDeep, new Vector3(0, 0.06f, 0), new Vector3(1.7f, 0.06f, 1.7f));
             Part(t, "SnowMound", PrimitiveType.Sphere, MaterialLibrary.Snow, new Vector3(0, 0.1f, 0), new Vector3(1.5f, 0.55f, 1.5f));
             float top = 0.45f;
             for (int i = 0; i < L; i++)
