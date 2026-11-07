@@ -120,6 +120,23 @@ serveur statique local.
 
 ## Pièges déjà rencontrés
 
+- **Ne relancez jamais le job échoué d'une exécution WebGL : déclenchez une
+  exécution neuve.** « Re-run failed jobs » rejoue le job *dans la même
+  exécution*, et son `upload-pages-artifact` dépose un **second** artefact
+  nommé `github-pages` à côté de celui de la première tentative.
+  `deploy-pages` refuse alors de choisir, sur
+  « Multiple artifacts named "github-pages" were unexpectedly found for this
+  workflow run. Artifact count is 2. » — et ce second échec est instantané,
+  donc facile à confondre avec le premier. Passez par **Actions → Bastion –
+  WebGL navigateur → Run workflow**, qui part d'une exécution vierge.
+  À noter : un push ne contenant que des fichiers `.md` ne déclenche rien
+  (`paths-ignore`), il ne risque donc pas d'annuler une exécution en cours.
+- **Le déploiement Pages peut expirer sans que rien ne soit en cause chez
+  nous.** Il reste sur `Current status: syncing_files`, renvoie un statut vide
+  puis « Timeout reached, aborting! » au bout de 10 minutes. La construction
+  Unity, elle, est déjà réussie et l'artefact `bastion-webgl` reste
+  téléchargeable. C'est le seul cas où relancer sans chercher plus loin se
+  justifie — en déclenchant une exécution neuve, voir le point précédent.
 - **Une licence Personal ne vaut que pour un poste à la fois.** Si Unity tourne
   sur votre machine avec le même compte, l'activation peut échouer dans le nuage.
 - **La version d'Unity doit exister chez GameCI.** Les workflows lisent
